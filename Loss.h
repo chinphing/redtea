@@ -16,6 +16,11 @@ namespace redtea {
             virtual void computeLoss() {
                 
             }
+            
+            void forward() {
+                inputTensors[0]->forward();
+                inputTensors[1]->forward();
+            } 
 
             void backward(Optimizer& opti) {
                 this->computeLoss();

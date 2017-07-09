@@ -46,13 +46,37 @@ namespace redtea {
 
         public :
             void forward() {
-                param->getOutput() = inputTensors[0]->getOutput()
-                                         +inputTensors[1]->getOutput();
+                inputTensors[0]->forward();
+                inputTensors[1]->forward();
+
+                MatrixX& a = inputTensors[0]->getOutput();
+                MatrixX& b = inputTensors[1]->getOutput();
+                assert(a.cols() == b.cols());
+
+                MatrixX& o = param->getOutput();
+                if(a.rows() != b.rows()) {
+                    o = a + b.replicate(a.rows(), 1);
+                } else {
+                    o = a + b;
+                }
             }
 
             void backward(Optimizer& opti) {
-                inputTensors[0]->getLoss() = param->getLoss();
-                inputTensors[1]->getLoss() = param->getLoss();
+                MatrixX& a = inputTensors[0]->getOutput();
+                MatrixX& b = inputTensors[1]->getOutput();
+ 
+                MatrixX& aLoss = inputTensors[0]->getLoss();
+                MatrixX& bLoss = inputTensors[1]->getLoss();
+
+                aLoss = param->getLoss();
+                if(a.rows() != b.rows()) {
+                    bLoss = MatrixX::Zero(b.rows(), b.cols());
+                    for(int i=0;i<a.rows();i++) {
+                        bLoss += a.row(i);             
+                    }
+                } else {
+                    bLoss = param->getLoss();
+                }
                 
                 inputTensors[0]->backward(opti);
                 inputTensors[1]->backward(opti);
@@ -68,6 +92,9 @@ namespace redtea {
 
         public :
             void forward() {
+                inputTensors[0]->forward();
+                inputTensors[1]->forward();
+
                 param->getOutput() = inputTensors[0]->getOutput()
                                          *inputTensors[1]->getOutput();
             }
