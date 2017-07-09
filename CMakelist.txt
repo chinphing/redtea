@@ -1,0 +1,15 @@
+#project redtea
+
+PROJECT(readtea)
+  
+#head file path  
+INCLUDE_DIRECTORIES(  
+    ../eigen/Eigen/src/
+)  
+
+#source directory  
+AUX_SOURCE_DIRECTORY(./ DIR_SRCS)  
+
+#add executable file  
+ADD_EXECUTABLE(test test/test.cpp)  
+
