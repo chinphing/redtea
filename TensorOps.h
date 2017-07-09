@@ -5,13 +5,13 @@
 #include "Optimizer.h"
 
 namespace redtea {
-    namespace Core {
+    namespace core {
         class Variable : public Tensor {
             public :
-                Variable(const MatrixX& mat) {
+                Variable(const MatrixX& mat) : Tensor() {
                     param->getOutput() = mat;
                 }
-                Variable(int row, int col) {
+                Variable(int row, int col) : Tensor(){
                     param->getOutput().resize(row, col);
                 }
 
@@ -21,16 +21,27 @@ namespace redtea {
                 }
 
                 void backward(Optimizer& opti) {
-                    param->getOutput() -= param->getLoss() * learningRate();
+                    param->getOutput() -= param->getLoss() * opti.getLearningRate();
                 } 
-        }
+        };
 
+        class Constant : public Variable {
+            public :
+                Constant(const MatrixX& mat) : Variable(mat) {
+                    
+                }
+                Constant(int row, int col) : Variable(row, col) {
+                    
+                }
+            public :
+                void backward(Optimizer& opti) { }
+        };
+        
         class AddTensorOps : public Tensor {
         public :
-            AddTensorOps(PTensor a, PTensor b) {
+            AddTensorOps(PTensor a, PTensor b) : Tensor() {
                 inputTensors.push_back(a);
                 inputTensors.push_back(b);
-                param = shared_ptr<Param*>(new Param());
             }
 
         public :
@@ -50,10 +61,9 @@ namespace redtea {
 
         class MultTensorOps : public Tensor {
         public :
-            MultTensorOps(PTensor a, PTensor b) {
+            MultTensorOps(PTensor a, PTensor b) : Tensor(){
                 inputTensors.push_back(a);
                 inputTensors.push_back(b);
-                param = shared_ptr<Param*>(new Param());
             }
 
         public :
@@ -64,9 +74,9 @@ namespace redtea {
 
             void backward(Optimizer& opti) {
                 inputTensors[0]->getLoss() = 
-                    inputTensors[1]->getOuput().transpose() * param->getLoss();
+                    inputTensors[1]->getOutput().transpose() * param->getLoss();
                 inputTensors[1]->getLoss() = 
-                    inputTensors[0]->getOuput().transpose() * param->getLoss();
+                    inputTensors[0]->getOutput().transpose() * param->getLoss();
                 
                 inputTensors[0]->backward(opti);
                 inputTensors[1]->backward(opti);

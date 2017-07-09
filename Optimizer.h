@@ -1,10 +1,11 @@
-#ifndef __TENSOR_H
-#define __TENSOR_H
+#ifndef __OPTIMIZER_H
+#define __OPTIMIZER_H
 
 #include <list>
-#include <def.h>
+#include "def.h"
 
 using namespace std;
+using namespace Eigen;
 
 namespace redtea{
     namespace core{

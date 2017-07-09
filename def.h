@@ -1,9 +1,11 @@
 #ifndef __DEF_H
 #define __DEF_H
 
-#include <Core/Matrix.h>
+#include <Eigen/Dense>
 
-typedef double type
+using namespace Eigen;
+
+typedef double type;
 
 typedef Matrix<type, Dynamic, Dynamic> MatrixX;
 
