@@ -26,6 +26,13 @@ namespace redtea {
                 void backward(Optimizer& opti) {
                     param->getOutput() -= param->getLoss() * opti.getLearningRate();
                 } 
+            public :
+                static shared_ptr<Variable> create(const MatrixX& mat) {
+                    return shared_ptr<Variable>(new Variable(mat));
+                }
+                static shared_ptr<Variable> create(int row, int col) {
+                    return shared_ptr<Variable>(new Variable(row, col));
+                }
         };
 
         class Constant : public Variable {
@@ -38,11 +45,18 @@ namespace redtea {
                 }
             public :
                 void backward(Optimizer& opti) { }
+            public :
+                static shared_ptr<Variable> create(const MatrixX& mat) {
+                    return shared_ptr<Constant>(new Constant(mat));
+                }
+                static shared_ptr<Variable> create(int row, int col) {
+                    return shared_ptr<Constant>(new Constant(row, col));
+                }
         };
         
-        class AddTensorOps : public Tensor {
+        class Add : public Tensor {
         public :
-            AddTensorOps(PTensor a, PTensor b) : Tensor() {
+            Add(PTensor a, PTensor b) : Tensor() {
                 inputTensors.push_back(a);
                 inputTensors.push_back(b);
             }
@@ -84,11 +98,16 @@ namespace redtea {
                 inputTensors[0]->backward(opti);
                 inputTensors[1]->backward(opti);
             }
+
+        public :
+            static shared_ptr<Add> create(PTensor a, PTensor b) {
+                return shared_ptr<Add>(new Add(a, b));
+            }
         };
 
-        class MultTensorOps : public Tensor {
+        class Mul : public Tensor {
         public :
-            MultTensorOps(PTensor a, PTensor b) : Tensor(){
+            Mul(PTensor a, PTensor b) : Tensor(){
                 inputTensors.push_back(a);
                 inputTensors.push_back(b);
             }
@@ -110,6 +129,11 @@ namespace redtea {
                 
                 inputTensors[0]->backward(opti);
                 inputTensors[1]->backward(opti);
+            }
+
+        public :
+            static shared_ptr<Mul> create(PTensor a, PTensor b) {
+                return shared_ptr<Mul>(new Mul(a, b));
             }
         };
         

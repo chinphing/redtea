@@ -31,14 +31,14 @@ int main(int argc, char* argv[]) {
               20, 23.95,
               13, 10.1;
 
-    shared_ptr<Constant> x(new Constant(sample));
-    shared_ptr<Constant> y(new Constant(target));
+    auto x = Constant::create(sample);
+    auto y = Constant::create(target);
 
-    shared_ptr<Variable> w(new Variable(MatrixX::Random(2, 2)));
-    shared_ptr<Variable> b(new Variable(MatrixX::Random(1, 2)));
+    auto w = Variable::create(MatrixX::Random(2, 2));
+    auto b = Variable::create(MatrixX::Random(1, 2));
     
-    shared_ptr<Tensor> mul(new MultTensorOps(x, w));
-    shared_ptr<Tensor> add(new AddTensorOps(mul, b));
+    auto mul = Mul::create(x, w);
+    auto add = Add::create(mul, b);
 
     LeastSquareLoss loss(add, y);
 
