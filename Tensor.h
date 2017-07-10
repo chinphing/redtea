@@ -12,31 +12,17 @@ using namespace std;
 
 namespace redtea{
     namespace core{
-        class Param {
-            protected :
-                MatrixX loss;
-                MatrixX output;
-            public :
-                virtual MatrixX& getOutput() {
-                    return output;
-                }
-
-                virtual MatrixX& getLoss() {
-                    return loss;
-                }
-        };
 
         class Tensor {
             protected :
-                //porinter to a inner tensor, every tensor class should implement a inner tensor
-                shared_ptr<Param> param;
-                
+                MatrixX tensorLoss;
+                MatrixX tensorOutput;
+
                 //input tensors, for back propergation
                 vector<shared_ptr<Tensor>> inputTensors;
 
             protected :
                 Tensor() {
-                    param = shared_ptr<Param>(new Param());
                 }
 
             public :
@@ -54,11 +40,11 @@ namespace redtea{
 
             public :
                 MatrixX& getOutput() {
-                    return param->getOutput();
+                    return tensorOutput;
                 }
 
                 MatrixX& getLoss() {
-                    return param->getLoss();
+                    return tensorLoss;
                 }
                  
         };

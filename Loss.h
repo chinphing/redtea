@@ -29,7 +29,7 @@ namespace redtea {
 
             void backward(Optimizer& opti) {
                 this->computeLoss();
-                inputTensors[0]->getLoss() = param->getLoss();
+                inputTensors[0]->getLoss() = this->getLoss();
                 Tensor::backward(opti);
             }
         };
@@ -45,10 +45,10 @@ namespace redtea {
                     assert(predict.cols() == target.cols()
                            && predict.rows() == target.rows());
 
-                    param->getLoss() = predict - target;
+                    this->getLoss() = predict - target;
 
-                    MatrixX square = param->getLoss().transpose() 
-                                            * param->getLoss();
+                    MatrixX square = this->getLoss().transpose() 
+                                            * this->getLoss();
                     loss = square.sum() / 2;
                 }
         };
@@ -65,7 +65,7 @@ namespace redtea {
                     assert(predict.cols() == target.cols()
                            && predict.rows() == target.rows());
                     
-                    MatrixX& l = param->getLoss();
+                    MatrixX& l = this->getLoss();
                     l.resize(target.rows(), target.cols());
                     for(int i=0;i<l.rows();i++) {
                         for(int j=0;j<l.cols();j++) {

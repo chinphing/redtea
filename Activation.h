@@ -24,7 +24,7 @@ namespace redtea {
                 Tensor::forward();
 
                 MatrixX& in = inputTensors[0]->getOutput();
-                MatrixX& o = param->getOutput();
+                MatrixX& o = this->getOutput();
                 o.resize(in.rows(), in.cols());
      
                 for(int i=0;i<in.rows();i++) {
@@ -35,8 +35,8 @@ namespace redtea {
             }
 
             void backward(Optimizer& opti) {
-                MatrixX& o = param->getOutput();
-                MatrixX& l = param->getLoss();
+                MatrixX& o = this->getOutput();
+                MatrixX& l = this->getLoss();
                 MatrixX& inLoss = inputTensors[0]->getLoss();
 
                 inLoss.resize(o.rows(), o.cols());
@@ -70,7 +70,7 @@ namespace redtea {
                 Tensor::forward();
 
                 MatrixX& in = inputTensors[0]->getOutput();
-                MatrixX& o = param->getOutput();
+                MatrixX& o = this->getOutput();
 
                 o.resize(in.rows(), in.cols());
                 expVals.resize(in.rows(), in.cols());
@@ -81,7 +81,6 @@ namespace redtea {
                     int maxIndex = 0;
                     double max = in.row(i).maxCoeff(&maxIndex);
                     double sum= 0;
-//                    cout<<"max: "<<max<<", maxIndex: "<<maxIndex<<endl; 
                     //set expVal and expSum for backward
                     for(int j=0;j<in.cols();j++) {
                         expVals(i, j) = exp(in(i, j) - max);
@@ -95,17 +94,13 @@ namespace redtea {
                         o(i, j) = expVals(i, j) / sum;
                     }
                 }
-//                cout<<"in: "<<in<<endl;
-//                cout<<"expSums: "<<expSums<<endl;
-//                cout<<"expVals: "<<expVals<<endl;
             }
 
             void backward(Optimizer& opti) {
-                MatrixX& o = param->getOutput();
-                MatrixX& l = param->getLoss();
+                MatrixX& o = this->getOutput();
+                MatrixX& l = this->getLoss();
                 MatrixX& inLoss = inputTensors[0]->getLoss();
 
-//                cout<<"l: "<<l<<endl;
                 inLoss.resize(o.rows(), o.cols());
                 for(int i=0;i<o.rows();i++) {
                     for(int j=0;j<o.cols();j++) {

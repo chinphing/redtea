@@ -12,19 +12,19 @@ namespace redtea {
         class Variable : public Tensor {
             protected :
                 Variable(const MatrixX& mat) : Tensor() {
-                    param->getOutput() = mat;
+                    this->getOutput() = mat;
                 }
                 Variable(int row, int col) : Tensor(){
-                    param->getOutput().resize(row, col);
+                    this->getOutput().resize(row, col);
                 }
 
             public :
                 type& operator () (int i, int j) {
-                    return param->getOutput()(i, j); 
+                    return this->getOutput()(i, j); 
                 }
 
                 void backward(Optimizer& opti) {
-                    param->getOutput() -= param->getLoss() * opti.getLearningRate();
+                    this->getOutput() -= this->getLoss() * opti.getLearningRate();
                 } 
             public :
                 static shared_ptr<Variable> create(const MatrixX& mat) {
@@ -69,7 +69,7 @@ namespace redtea {
                 MatrixX& b = inputTensors[1]->getOutput();
                 assert(a.cols() == b.cols());
 
-                MatrixX& o = param->getOutput();
+                MatrixX& o = this->getOutput();
                 if(a.rows() != b.rows()) {
                     o = a + b.replicate(a.rows(), 1);
                 } else {
@@ -84,14 +84,14 @@ namespace redtea {
                 MatrixX& aLoss = inputTensors[0]->getLoss();
                 MatrixX& bLoss = inputTensors[1]->getLoss();
 
-                aLoss = param->getLoss();
+                aLoss = this->getLoss();
                 if(a.rows() != b.rows()) {
                     bLoss = MatrixX::Zero(b.rows(), b.cols());
                     for(int i=0;i<a.rows();i++) {
                         bLoss += aLoss.row(i);             
                     }
                 } else {
-                    bLoss = param->getLoss();
+                    bLoss = this->getLoss();
                 }
 
                 Tensor::backward(opti);    
@@ -114,15 +114,15 @@ namespace redtea {
             void forward() {
                 Tensor::forward();
 
-                param->getOutput() = inputTensors[0]->getOutput()
+                this->getOutput() = inputTensors[0]->getOutput()
                                          *inputTensors[1]->getOutput();
             }
 
             void backward(Optimizer& opti) {
                 inputTensors[0]->getLoss() = 
-                    param->getLoss()*inputTensors[1]->getOutput().transpose();
+                    this->getLoss()*inputTensors[1]->getOutput().transpose();
                 inputTensors[1]->getLoss() = 
-                    inputTensors[0]->getOutput().transpose() * param->getLoss();
+                    inputTensors[0]->getOutput().transpose() * this->getLoss();
                 
                 Tensor::backward(opti);    
             }
