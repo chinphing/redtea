@@ -55,7 +55,77 @@ namespace redtea {
                 return shared_ptr<Sigmoid>(new Sigmoid(in, alpha));
             }
         };
-        
+
+        class Softmax : public Tensor {
+        private :
+            MatrixX expVals;
+            MatrixX expSums;
+            vector<int> maxIndexes;
+        protected :
+            Softmax(PTensor in) : Tensor(){
+                inputTensors.push_back(in);
+            }
+        public :
+            void forward() {
+                Tensor::forward();
+
+                MatrixX& in = inputTensors[0]->getOutput();
+                MatrixX& o = param->getOutput();
+
+                o.resize(in.rows(), in.cols());
+                expVals.resize(in.rows(), in.cols());
+                expSums.resize(in.rows(), 1);
+                maxIndexes.clear();
+
+                for(int i=0;i<in.rows();i++) {
+                    int maxIndex = 0;
+                    double max = in.row(i).maxCoeff(&maxIndex);
+                    double sum= 0;
+//                    cout<<"max: "<<max<<", maxIndex: "<<maxIndex<<endl; 
+                    //set expVal and expSum for backward
+                    for(int j=0;j<in.cols();j++) {
+                        expVals(i, j) = exp(in(i, j) - max);
+                        sum += expVals(i, j);
+                    }
+                    expSums(i, 0) = sum;
+                    maxIndexes.push_back(maxIndex);
+                    
+                    //set ouput
+                    for(int j=0;j<in.cols();j++) {
+                        o(i, j) = expVals(i, j) / sum;
+                    }
+                }
+//                cout<<"in: "<<in<<endl;
+//                cout<<"expSums: "<<expSums<<endl;
+//                cout<<"expVals: "<<expVals<<endl;
+            }
+
+            void backward(Optimizer& opti) {
+                MatrixX& o = param->getOutput();
+                MatrixX& l = param->getLoss();
+                MatrixX& inLoss = inputTensors[0]->getLoss();
+
+//                cout<<"l: "<<l<<endl;
+                inLoss.resize(o.rows(), o.cols());
+                for(int i=0;i<o.rows();i++) {
+                    for(int j=0;j<o.cols();j++) {
+                        if(j != maxIndexes[i]) {
+                            double sum = expSums(i);
+                            inLoss(i, j) = 1.0/sum-expVals(i, j)/(sum*sum);
+                            inLoss(i, j) *= expVals(i, j)*l(i, j);
+                        } else {
+                            inLoss(i, j) = 0;
+                        }
+                    }
+                }
+
+                Tensor::backward(opti);
+            }
+        public :
+            static shared_ptr<Softmax> create(PTensor in) {
+                return shared_ptr<Softmax>(new Softmax(in));
+            }
+        };    
     };
 };
 #endif

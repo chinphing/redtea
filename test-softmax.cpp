@@ -28,16 +28,22 @@ int main(int argc, char* argv[]) {
     Matrix<type, 100, 1> target;
     target << 0,1,0,0,0,1,0,1,0,0,1,0,1,0,1,1,1,1,1,1,1,1,0,1,1,0,0,1,1,0,1,1,0,1,1,0,0,0,0,0,1,1,0,1,1,0,1,1,0,0,0,0,0,0,1,1,0,1,0,1,1,1,0,0,0,1,1,0,0,0,0,1,0,1,0,0,1,1,1,1,0,1,0,1,1,1,1,0,1,1,1,0,0,1,1,1,0,1,0,0;
 
+    MatrixX targetSoftmax = Matrix<type, 100, 2>::Zero(100, 2);
+    for(int i=0;i<100;i++) {
+        if(target(i, 0) > 0.5) targetSoftmax(i, 1) = 1;
+        else targetSoftmax(i, 0) = 1;
+    }
+
     auto x = Constant::create(sample);
-    auto y = Constant::create(target);
+    auto y = Constant::create(targetSoftmax);
 
     //create the network
-    auto w = Variable::create(MatrixX::Random(2, 1));
-    auto b = Variable::create(MatrixX::Random(1, 1));
+    auto w = Variable::create(MatrixX::Random(2, 2));
+    auto b = Variable::create(MatrixX::Random(1, 2));
    
     auto mul = Mul::create(x, w);
     auto add = Add::create(mul, b);
-    auto act = Sigmoid::create(add);
+    auto act = Softmax::create(add);
 
     //train
     LogisticLoss loss(act, y);

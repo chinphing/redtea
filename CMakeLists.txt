@@ -18,4 +18,4 @@ AUX_SOURCE_DIRECTORY(./ DIR_SRCS)
 #add executable file  
 ADD_EXECUTABLE(test-lsl test-lsl.cpp)  
 ADD_EXECUTABLE(test-log test-log.cpp)
-
+ADD_EXECUTABLE(test-softmax test-softmax.cpp)
