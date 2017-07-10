@@ -41,11 +41,15 @@ namespace redtea{
 
             public :
                 virtual void forward() {
-    
+                    for(int i=0;i<inputTensors.size();i++) {
+                        inputTensors[i]->forward();
+                    }
                 }
 
                 virtual void backward(Optimizer& opti) {
-
+                    for(int i=0;i<inputTensors.size();i++) {
+                        inputTensors[i]->backward(opti);
+                    }
                 }
 
             public :

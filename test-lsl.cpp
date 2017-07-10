@@ -1,3 +1,7 @@
+/*
+* test case for LeastSquareLoss
+*/
+
 #include <iostream>
 #include <stdlib.h>
 

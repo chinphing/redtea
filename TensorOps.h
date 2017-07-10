@@ -63,8 +63,7 @@ namespace redtea {
 
         public :
             void forward() {
-                inputTensors[0]->forward();
-                inputTensors[1]->forward();
+                Tensor::forward();
 
                 MatrixX& a = inputTensors[0]->getOutput();
                 MatrixX& b = inputTensors[1]->getOutput();
@@ -94,9 +93,8 @@ namespace redtea {
                 } else {
                     bLoss = param->getLoss();
                 }
-                
-                inputTensors[0]->backward(opti);
-                inputTensors[1]->backward(opti);
+
+                Tensor::backward(opti);    
             }
 
         public :
@@ -114,8 +112,7 @@ namespace redtea {
 
         public :
             void forward() {
-                inputTensors[0]->forward();
-                inputTensors[1]->forward();
+                Tensor::forward();
 
                 param->getOutput() = inputTensors[0]->getOutput()
                                          *inputTensors[1]->getOutput();
@@ -127,8 +124,7 @@ namespace redtea {
                 inputTensors[1]->getLoss() = 
                     inputTensors[0]->getOutput().transpose() * param->getLoss();
                 
-                inputTensors[0]->backward(opti);
-                inputTensors[1]->backward(opti);
+                Tensor::backward(opti);    
             }
 
         public :
