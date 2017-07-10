@@ -43,7 +43,7 @@ namespace redtea {
                 void computeLoss() {
                     MatrixX predict = inputTensors[0]->getOutput();
                     MatrixX target = inputTensors[1]->getOutput();
-                    assert(predict.cols() == 1 && target.cols() == 1 
+                    assert(predict.cols() == target.cols()
                            && predict.rows() == target.rows());
 
                     param->getLoss() = predict - target;

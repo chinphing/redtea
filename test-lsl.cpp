@@ -24,14 +24,18 @@ int main(int argc, char* argv[]) {
               5, 3,
               6, 0;
 
-    Matrix<type, 5, 1> target;
-    target << 6, 8, 13, 20, 13;
+    Matrix<type, 5, 2> target;
+    target << 6, 7.95, 
+              8, 9.4,
+              13, 15.95,
+              20, 23.95,
+              13, 10.1;
 
     shared_ptr<Constant> x(new Constant(sample));
     shared_ptr<Constant> y(new Constant(target));
 
-    shared_ptr<Variable> w(new Variable(MatrixX::Random(2, 1)));
-    shared_ptr<Variable> b(new Variable(MatrixX::Random(1, 1)));
+    shared_ptr<Variable> w(new Variable(MatrixX::Random(2, 2)));
+    shared_ptr<Variable> b(new Variable(MatrixX::Random(1, 2)));
     
     shared_ptr<Tensor> mul(new MultTensorOps(x, w));
     shared_ptr<Tensor> add(new AddTensorOps(mul, b));
