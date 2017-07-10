@@ -34,11 +34,12 @@ namespace redtea{
                 //input tensors, for back propergation
                 vector<shared_ptr<Tensor>> inputTensors;
 
-            public :
+            protected :
                 Tensor() {
                     param = shared_ptr<Param>(new Param());
                 }
 
+            public :
                 virtual void forward() {
     
                 }

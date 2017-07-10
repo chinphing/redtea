@@ -10,7 +10,7 @@ using namespace std;
 namespace redtea {
     namespace core {
         class Variable : public Tensor {
-            public :
+            protected :
                 Variable(const MatrixX& mat) : Tensor() {
                     param->getOutput() = mat;
                 }
@@ -36,7 +36,7 @@ namespace redtea {
         };
 
         class Constant : public Variable {
-            public :
+            protected :
                 Constant(const MatrixX& mat) : Variable(mat) {
                     
                 }
@@ -55,7 +55,7 @@ namespace redtea {
         };
         
         class Add : public Tensor {
-        public :
+        protected :
             Add(PTensor a, PTensor b) : Tensor() {
                 inputTensors.push_back(a);
                 inputTensors.push_back(b);
@@ -106,7 +106,7 @@ namespace redtea {
         };
 
         class Mul : public Tensor {
-        public :
+        protected :
             Mul(PTensor a, PTensor b) : Tensor(){
                 inputTensors.push_back(a);
                 inputTensors.push_back(b);
