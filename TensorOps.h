@@ -3,6 +3,9 @@
 
 #include "Tensor.h"
 #include "Optimizer.h"
+#include <iostream>
+
+using namespace std;
 
 namespace redtea {
     namespace core {
@@ -72,7 +75,7 @@ namespace redtea {
                 if(a.rows() != b.rows()) {
                     bLoss = MatrixX::Zero(b.rows(), b.cols());
                     for(int i=0;i<a.rows();i++) {
-                        bLoss += a.row(i);             
+                        bLoss += aLoss.row(i);             
                     }
                 } else {
                     bLoss = param->getLoss();
@@ -101,7 +104,7 @@ namespace redtea {
 
             void backward(Optimizer& opti) {
                 inputTensors[0]->getLoss() = 
-                    inputTensors[1]->getOutput().transpose() * param->getLoss();
+                    param->getLoss()*inputTensors[1]->getOutput().transpose();
                 inputTensors[1]->getLoss() = 
                     inputTensors[0]->getOutput().transpose() * param->getLoss();
                 

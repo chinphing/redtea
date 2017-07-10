@@ -6,12 +6,18 @@
 namespace redtea {
     namespace core {
         class Loss : public Tensor {
+        protected :
+            double loss;
         public : 
             Loss(PTensor predict, PTensor target) {
+                loss = 0;
                 inputTensors.push_back(predict);
                 inputTensors.push_back(target);
             }
 
+            double getTotalLoss() {
+                return loss;
+            }
 
             virtual void computeLoss() {
                 
@@ -40,7 +46,11 @@ namespace redtea {
                     assert(predict.cols() == 1 && target.cols() == 1 
                            && predict.rows() == target.rows());
 
-                    param->getLoss() = target - predict;
+                    param->getLoss() = predict - target;
+
+                    MatrixX square = param->getLoss().transpose() 
+                                            * param->getLoss();
+                    loss = square.sum() / 2;
                 }
         };
     };
