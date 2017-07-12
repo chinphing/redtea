@@ -6,6 +6,8 @@ PROJECT(readtea)
 
 SET(CMAKE_C_COMPILER g++)
 add_compile_options(-std=c++11)
+
+AUX_SOURCE_DIRECTORY(src DIR_SRCS)  
   
 #head file path  
 INCLUDE_DIRECTORIES(  
@@ -16,6 +18,6 @@ INCLUDE_DIRECTORIES(
 AUX_SOURCE_DIRECTORY(./ DIR_SRCS)  
 
 #add executable file  
-ADD_EXECUTABLE(test-lsl test-lsl.cpp)  
-ADD_EXECUTABLE(test-log test-log.cpp)
-ADD_EXECUTABLE(test-softmax test-softmax.cpp)
+ADD_EXECUTABLE(test-lsl src/test-lsl.cpp src/Tensor.cpp)  
+ADD_EXECUTABLE(test-log src/test-log.cpp src/Tensor.cpp)
+ADD_EXECUTABLE(test-softmax src/test-softmax.cpp src/Tensor.cpp)
