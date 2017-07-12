@@ -10,12 +10,23 @@ using namespace std;
 namespace redtea {
     namespace core {
         class Variable : public Tensor {
-            protected :
+            public :
+                Variable() : Tensor() { }
                 Variable(const MatrixX& mat) : Tensor() {
                     this->getOutput() = mat;
                 }
                 Variable(int row, int col) : Tensor(){
                     this->getOutput().resize(row, col);
+                }
+            public :
+                Variable(Variable& other) {
+                    set(other);
+                }
+
+                typedef Variable Type;
+                typedef shared_ptr<Type> PType;
+                shared_ptr<Tensor> copy() {
+                    return PType(new Type(*this));
                 }
 
             public :
@@ -36,12 +47,23 @@ namespace redtea {
         };
 
         class Constant : public Variable {
-            protected :
+            public :
+                Constant() : Variable() {}
                 Constant(const MatrixX& mat) : Variable(mat) {
                     
                 }
                 Constant(int row, int col) : Variable(row, col) {
                     
+                }
+            public :
+                Constant(Constant& other) {
+                    set(other);
+                }
+
+                typedef Constant Type;
+                typedef shared_ptr<Type> PType;
+                shared_ptr<Tensor> copy() {
+                    return PType(new Type(*this));
                 }
             public :
                 void backward(Optimizer& opti) { }
@@ -55,12 +77,26 @@ namespace redtea {
         };
         
         class Add : public Tensor {
-        protected :
+        public :
             Add(PTensor a, PTensor b) : Tensor() {
                 inputTensors.push_back(a);
                 inputTensors.push_back(b);
             }
 
+            Add(Tensor& a, Tensor& b) {
+                inputTensors.push_back(a.copy());
+                inputTensors.push_back(b.copy());
+            }
+        public :
+                Add(Add& other) {
+                    set(other);
+                }
+
+                typedef Add Type;
+                typedef shared_ptr<Type> PType;
+                shared_ptr<Tensor> copy() {
+                    return PType(new Type(*this));
+                }
         public :
             void forward() {
                 Tensor::forward();
@@ -104,16 +140,29 @@ namespace redtea {
         };
 
         class Mul : public Tensor {
-        protected :
+        public :
             Mul(PTensor a, PTensor b) : Tensor(){
                 inputTensors.push_back(a);
                 inputTensors.push_back(b);
             }
+            Mul(Tensor& a, Tensor& b) : Tensor(){
+                inputTensors.push_back(a.copy());
+                inputTensors.push_back(b.copy());
+            }
+        public :
+                typedef Mul Type;
+                typedef shared_ptr<Type> PType;
+                Mul(Type& other) {
+                    set(other);
+                }
 
+                shared_ptr<Tensor> copy() {
+                    return PType(new Type(*this));
+                }
         public :
             void forward() {
                 Tensor::forward();
-
+                
                 this->getOutput() = inputTensors[0]->getOutput()
                                          *inputTensors[1]->getOutput();
             }

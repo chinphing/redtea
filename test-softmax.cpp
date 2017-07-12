@@ -34,6 +34,7 @@ int main(int argc, char* argv[]) {
         else targetSoftmax(i, 0) = 1;
     }
 
+    /*
     auto x = Constant::create(sample);
     auto y = Constant::create(targetSoftmax);
 
@@ -49,6 +50,7 @@ int main(int argc, char* argv[]) {
     LogisticLoss loss(act, y);
     Optimizer opti(1e-2);
     for(int i=0;i<epoch;i++) {
+        loss.reset();
         loss.forward();
         loss.backward(opti);
         
@@ -56,6 +58,32 @@ int main(int argc, char* argv[]) {
     }
     
     cout<<"o: "<<act->getOutput()<<endl;
+    */
+
+    cout<<"direct mode."<<endl;
+    Constant x(sample);
+    Constant y(targetSoftmax);
+
+    //create the network
+    Variable w(MatrixX::Random(2, 2));
+    Variable b(MatrixX::Random(1, 2));
+
+    Mul mul(x, w);
+    Add add(mul, b);
+    Softmax act(add);
+
+    //train
+    LogisticLoss loss(act, y);
+    Optimizer opti(1e-2);
+    for(int i=0;i<epoch;i++) {
+        loss.reset();
+        loss.forward();
+        loss.backward(opti);
+
+        cout<<", l: "<<loss.getTotalLoss()<<endl;
+    }
+
+    cout<<"o: "<<act.getOutput()<<endl;
 
     return 0;
 }

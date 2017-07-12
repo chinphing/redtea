@@ -11,14 +11,23 @@ namespace redtea {
     namespace core {
         
         class Sigmoid : public Tensor {
-        private :
-            double alpha;
-        protected :
-            Sigmoid(PTensor in, double alpha = 1.0) : Tensor() {
-                this->alpha = alpha;
+        public :
+            Sigmoid(PTensor in) : Tensor() {
                 inputTensors.push_back(in);
             }
+            Sigmoid(Tensor& in) : Tensor() {
+                inputTensors.push_back(in.copy());
+            }
+        public :
+                typedef Sigmoid Type;
+                typedef shared_ptr<Type> PType;
+                Sigmoid(Type& other) {
+                    set(other);
+                }
 
+                shared_ptr<Tensor> copy() {
+                    return PType(new Type(*this));
+                }
         public :
             void forward() {
                 Tensor::forward();
@@ -29,7 +38,7 @@ namespace redtea {
      
                 for(int i=0;i<in.rows();i++) {
                     for(int j=0;j<in.cols();j++) {
-                        o(i, j) = 1/(1+exp(-alpha*in(i, j)));
+                        o(i, j) = 1/(1+exp(-in(i, j)));
                     }
                 }
             }
@@ -42,7 +51,7 @@ namespace redtea {
                 inLoss.resize(o.rows(), o.cols());
                 for(int i=0;i<o.rows();i++) {
                     for(int j=0;j<o.cols();j++) {
-                        inLoss(i, j) = alpha * o(i, j) * (1.0- o(i, j));
+                        inLoss(i, j) = o(i, j) * (1.0- o(i, j));
                         inLoss(i, j) *= l(i, j);
                     }
                 }
@@ -51,8 +60,8 @@ namespace redtea {
             }
 
         public :
-            static shared_ptr<Sigmoid> create(PTensor in, double alpha=1.0) {
-                return shared_ptr<Sigmoid>(new Sigmoid(in, alpha));
+            static shared_ptr<Sigmoid> create(PTensor in) {
+                return shared_ptr<Sigmoid>(new Sigmoid(in));
             }
         };
 
@@ -61,10 +70,23 @@ namespace redtea {
             MatrixX expVals;
             MatrixX expSums;
             vector<int> maxIndexes;
-        protected :
+        public :
             Softmax(PTensor in) : Tensor(){
                 inputTensors.push_back(in);
             }
+            Softmax(Tensor& in) : Tensor() {
+                inputTensors.push_back(in.copy());
+            }
+        public :
+                typedef Softmax Type;
+                typedef shared_ptr<Type> PType;
+                Softmax(Type& other) {
+                    set(other);
+                }
+
+                shared_ptr<Tensor> copy() {
+                    return PType(new Type(*this));
+                }
         public :
             void forward() {
                 Tensor::forward();

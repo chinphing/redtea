@@ -28,6 +28,8 @@ int main(int argc, char* argv[]) {
     Matrix<type, 100, 1> target;
     target << 0,1,0,0,0,1,0,1,0,0,1,0,1,0,1,1,1,1,1,1,1,1,0,1,1,0,0,1,1,0,1,1,0,1,1,0,0,0,0,0,1,1,0,1,1,0,1,1,0,0,0,0,0,0,1,1,0,1,0,1,1,1,0,0,0,1,1,0,0,0,0,1,0,1,0,0,1,1,1,1,0,1,0,1,1,1,1,0,1,1,1,0,0,1,1,1,0,1,0,0;
 
+/*
+    cout<<"factory mode."<<endl;
     auto x = Constant::create(sample);
     auto y = Constant::create(target);
 
@@ -43,6 +45,7 @@ int main(int argc, char* argv[]) {
     LogisticLoss loss(act, y);
     Optimizer opti(1e-2);
     for(int i=0;i<epoch;i++) {
+        loss.reset();
         loss.forward();
         loss.backward(opti);
         
@@ -50,6 +53,29 @@ int main(int argc, char* argv[]) {
     }
     
     cout<<"o: "<<act->getOutput()<<endl;
+*/
+    cout<<"direct mode"<<endl;
+    Constant x(sample);
+    Constant y(target);
 
+    Variable w(MatrixX::Random(2, 1));
+    Variable b(MatrixX::Random(1, 1));
+
+    Mul mul(x, w);
+    Add add(mul, b);
+    Sigmoid act(add);
+
+    LogisticLoss loss(act, y);
+    Optimizer opti(1e-2);
+    for(int i=0;i<epoch;i++) {
+        loss.reset();
+        loss.forward();
+        loss.backward(opti);
+
+        cout<<", l: "<<loss.getTotalLoss()<<endl;
+    }
+
+    cout<<"o: "<<act.getOutput()<<endl;
+    
     return 0;
 }

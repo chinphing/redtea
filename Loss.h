@@ -9,16 +9,33 @@ namespace redtea {
         protected :
             double loss;
         public : 
-            Loss(PTensor predict, PTensor target) {
+            Loss() : Tensor() {
+                loss = 0;
+            }
+            Loss(PTensor predict, PTensor target) : Tensor(){
                 loss = 0;
                 inputTensors.push_back(predict);
                 inputTensors.push_back(target);
+            }
+            Loss(Tensor& a, Tensor& b) : Tensor(){
+                inputTensors.push_back(a.copy());
+                inputTensors.push_back(b.copy());
+            }
+        public :
+            typedef Loss Type;
+            typedef shared_ptr<Type> PType;
+            Loss(Type& other) {
+                set(other);
+            }
+            shared_ptr<Tensor> copy() {
+                return PType(new Type(*this));
             }
 
             double getTotalLoss() {
                 return loss;
             }
 
+        public :
             virtual void computeLoss() {
                 
             }
@@ -36,9 +53,22 @@ namespace redtea {
 
         class LeastSquareLoss : public Loss {
             public :
+                LeastSquareLoss() : Loss() {}
                 LeastSquareLoss(PTensor predict, PTensor target) 
                                : Loss(predict, target) {}
+                LeastSquareLoss(Tensor& predict, Tensor& target)
+                               : Loss(predict, target) {}
+            public :
+                typedef LeastSquareLoss Type;
+                typedef shared_ptr<Type> PType;
+                LeastSquareLoss(Type& other) {
+                    set(other);
+                }
 
+                shared_ptr<Tensor> copy() {
+                    return PType(new Type(*this));
+                }
+            public :
                 void computeLoss() {
                     MatrixX predict = inputTensors[0]->getOutput();
                     MatrixX target = inputTensors[1]->getOutput();
@@ -55,9 +85,22 @@ namespace redtea {
 
         class LogisticLoss : public Loss {
             public :
+                LogisticLoss() : Loss() {}
                 LogisticLoss(PTensor predict, PTensor target)
                                : Loss(predict, target) {}
+                LogisticLoss(Tensor& predict, Tensor& target)
+                               : Loss(predict, target) {}
+            public :
+                typedef LogisticLoss Type;
+                typedef shared_ptr<Type> PType;
+                LogisticLoss(Type& other) {
+                    set(other);
+                }
 
+                shared_ptr<Tensor> copy() {
+                    return PType(new Type(*this));
+                }
+            public :
                 void computeLoss() {
                     loss = 0.0;
                     MatrixX predict = inputTensors[0]->getOutput();

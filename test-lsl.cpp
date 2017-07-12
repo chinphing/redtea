@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
               13, 15.95,
               20, 23.95,
               13, 10.1;
-
+/*
     auto x = Constant::create(sample);
     auto y = Constant::create(target);
 
@@ -46,6 +46,7 @@ int main(int argc, char* argv[]) {
 
     LeastSquareLoss loss(add, y);
 
+
     cout<<"w: "<<w->getOutput()<<endl;
     cout<<"b: "<<b->getOutput()<<endl;
 
@@ -53,10 +54,38 @@ int main(int argc, char* argv[]) {
     for(int i=0;i<epoch;i++) {
         loss.forward();
         loss.backward(opti);
-        
+
         cout<<"o: "<<add->getOutput();
         cout<<", w: "<<w->getOutput();
         cout<<", b: "<<b->getOutput();
+        cout<<", l: "<<loss.getTotalLoss()<<endl;
+    }
+*/
+
+    Constant x(sample);
+    Constant y(target);
+  
+    Variable w(MatrixX::Random(2, 2));
+    Variable b(MatrixX::Random(1, 2));
+
+    Mul mul(x, w);
+    Add add(mul, b);
+
+    LeastSquareLoss loss(add, y);
+
+
+    cout<<"w: "<<w.getOutput()<<endl;
+    cout<<"b: "<<b.getOutput()<<endl;
+
+    Optimizer opti(1e-2);
+    for(int i=0;i<epoch;i++) {
+        loss.reset();
+        loss.forward();
+        loss.backward(opti);
+        
+        cout<<"o: "<<add.getOutput();
+        cout<<", w: "<<w.getOutput();
+        cout<<", b: "<<b.getOutput();
         cout<<", l: "<<loss.getTotalLoss()<<endl;
     }
 
