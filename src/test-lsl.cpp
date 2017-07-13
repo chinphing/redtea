@@ -77,12 +77,14 @@ int main(int argc, char* argv[]) {
     cout<<"w: "<<w.getOutput()<<endl;
     cout<<"b: "<<b.getOutput()<<endl;
 
-    Optimizer opti(1e-2);
+    MomentumOptimizer opti(0.8, 1e-3);
+    //AdadeltaOptimizer opti;
+    //SGDOptimizer opti(1e-3);
+
+    loss.setOptimizer(opti);
     for(int i=0;i<epoch;i++) {
-        loss.reset();
-        loss.forward();
-        loss.backward(opti);
-        
+        loss.train();
+ 
         cout<<"o: "<<add.getOutput();
         cout<<", w: "<<w.getOutput();
         cout<<", b: "<<b.getOutput();

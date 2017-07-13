@@ -64,13 +64,18 @@ int main(int argc, char* argv[]) {
     Mul mul(x, w);
     Add add(mul, b);
     Sigmoid act(add);
-
+   
     LogisticLoss loss(act, y);
-    Optimizer opti(1e-2);
+
+
+    //SGDOptimizer opti(1e-3);
+    //AdadeltaOptimizer opti;
+    MomentumOptimizer opti(0.8, 1e-3);
+
+    loss.setOptimizer(opti);
+
     for(int i=0;i<epoch;i++) {
-        loss.reset();
-        loss.forward();
-        loss.backward(opti);
+        loss.train();
 
         cout<<", l: "<<loss.getTotalLoss()<<endl;
     }

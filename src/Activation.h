@@ -29,6 +29,7 @@ namespace redtea {
                     shared_ptr<Type> c(new Type());
                     c->setParam(this->getParam());
                     c->setInputs(this->getInputs());
+                    c->setOptimizer(this->getOptimizer());
                     return c;
                 }
 
@@ -47,20 +48,19 @@ namespace redtea {
                 }
             }
 
-            void backward(Optimizer& opti) {
+            void backward(const MatrixX& deltaLoss) {
                 MatrixX& o = this->getOutput();
-                MatrixX& l = this->getLoss();
-                MatrixX& inLoss = inputs[0]->getLoss();
+                const MatrixX& l = deltaLoss;
 
-                inLoss.resize(o.rows(), o.cols());
+                MatrixX deltaLossIn = MatrixX::Zero(o.rows(), o.cols()); 
                 for(int i=0;i<o.rows();i++) {
                     for(int j=0;j<o.cols();j++) {
-                        inLoss(i, j) = o(i, j) * (1.0- o(i, j));
-                        inLoss(i, j) *= l(i, j);
+                        deltaLossIn(i, j) = o(i, j) * (1.0- o(i, j));
+                        deltaLossIn(i, j) *= l(i, j);
                     }
                 }
-                
-                Tensor::backward(opti);    
+                inputs[0]->addLoss(deltaLossIn);
+                inputs[0]->backward(deltaLossIn);    
             }
 
         public :
@@ -92,6 +92,7 @@ namespace redtea {
                     shared_ptr<Type> c(new Type());
                     c->setParam(this->getParam());
                     c->setInputs(this->getInputs());
+                    c->setOptimizer(this->getOptimizer());
                     return c;
                 }
         public :
@@ -125,25 +126,25 @@ namespace redtea {
                 }
             }
 
-            void backward(Optimizer& opti) {
+            void backward(const MatrixX& deltaLoss) {
                 MatrixX& o = this->getOutput();
-                MatrixX& l = this->getLoss();
-                MatrixX& inLoss = inputs[0]->getLoss();
+                const MatrixX& l = deltaLoss;
+                MatrixX deltaLossIn = MatrixX::Zero(o.rows(), o.cols());
 
-                inLoss.resize(o.rows(), o.cols());
                 for(int i=0;i<o.rows();i++) {
                     for(int j=0;j<o.cols();j++) {
                         if(j != maxIndexes[i]) {
                             double sum = expSums(i);
-                            inLoss(i, j) = 1.0/sum-expVals(i, j)/(sum*sum);
-                            inLoss(i, j) *= expVals(i, j)*l(i, j);
+                            deltaLossIn(i, j) = 1.0/sum-expVals(i, j)/(sum*sum);
+                            deltaLossIn(i, j) *= expVals(i, j)*l(i, j);
                         } else {
-                            inLoss(i, j) = 0;
+                            deltaLossIn(i, j) = 0;
                         }
                     }
                 }
 
-                Tensor::backward(opti);
+                inputs[0]->addLoss(deltaLossIn);
+                inputs[0]->backward(deltaLossIn);
             }
         public :
             static shared_ptr<Softmax> create(PTensor in) {

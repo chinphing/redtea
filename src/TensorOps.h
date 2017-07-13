@@ -28,15 +28,15 @@ namespace redtea {
                     shared_ptr<Type> c(new Type());
                     c->setParam(this->getParam());
                     c->setInputs(this->getInputs());
+                    c->setOptimizer(this->getOptimizer());
                     return c;
                 }
             public :
-                type& operator () (int i, int j) {
-                    return this->getOutput()(i, j); 
+                void backward(const MatrixX& deltaLoss) {
+                    this->addLoss(deltaLoss);
                 }
-
-                void backward(Optimizer& opti) {
-                    this->getOutput() -= this->getLoss() * opti.getLearningRate();
+                void update() {
+                    optimizer->update(this->getOutput(), this->getLoss());
                 } 
             public :
                 static shared_ptr<Variable> create(const MatrixX& mat) {
@@ -47,14 +47,14 @@ namespace redtea {
                 }
         };
 
-        class Constant : public Variable {
+        class Constant : public Tensor {
             public :
-                Constant() : Variable() {}
-                Constant(const MatrixX& mat) : Variable(mat) {
-                    
+                Constant() : Tensor() {}
+                Constant(const MatrixX& mat) : Tensor(){
+                    this->getOutput() = mat;
                 }
-                Constant(int row, int col) : Variable(row, col) {
-                    
+                Constant(int row, int col) : Tensor(){
+                    this->getOutput().resize(row, col);
                 }
             public :
                 Constant(const Constant& other) {
@@ -66,15 +66,14 @@ namespace redtea {
                     shared_ptr<Type> c(new Type());
                     c->setParam(this->getParam());
                     c->setInputs(this->getInputs());
+                    c->setOptimizer(this->getOptimizer());
                     return c;
                 }
             public :
-                void backward(Optimizer& opti) { }
-            public :
-                static shared_ptr<Variable> create(const MatrixX& mat) {
+                static shared_ptr<Constant> create(const MatrixX& mat) {
                     return shared_ptr<Constant>(new Constant(mat));
                 }
-                static shared_ptr<Variable> create(int row, int col) {
+                static shared_ptr<Constant> create(int row, int col) {
                     return shared_ptr<Constant>(new Constant(row, col));
                 }
         };
@@ -101,6 +100,7 @@ namespace redtea {
                     shared_ptr<Type> c(new Type());
                     c->setParam(this->getParam());
                     c->setInputs(this->getInputs());
+                    c->setOptimizer(this->getOptimizer());
                     return c;
                 }
 
@@ -124,24 +124,25 @@ namespace redtea {
                 }
             }
 
-            void backward(Optimizer& opti) {
+            void backward(const MatrixX& deltaLoss) {
                 MatrixX& a = inputs[0]->getOutput();
                 MatrixX& b = inputs[1]->getOutput();
- 
-                MatrixX& aLoss = inputs[0]->getLoss();
-                MatrixX& bLoss = inputs[1]->getLoss();
 
-                aLoss = this->getLoss();
+                MatrixX deltaLoss0 = deltaLoss;
+                MatrixX deltaLoss1;
                 if(a.rows() != b.rows()) {
-                    bLoss = MatrixX::Zero(b.rows(), b.cols());
+                    deltaLoss1 = MatrixX::Zero(b.rows(), b.cols());
                     for(int i=0;i<a.rows();i++) {
-                        bLoss += aLoss.row(i);             
+                        deltaLoss1 += deltaLoss.row(i);             
                     }
                 } else {
-                    bLoss = this->getLoss();
+                    deltaLoss1 = deltaLoss;
                 }
+                inputs[0]->addLoss(deltaLoss0);
+                inputs[1]->addLoss(deltaLoss1);
 
-                Tensor::backward(opti);    
+                inputs[0]->backward(deltaLoss0);
+                inputs[1]->backward(deltaLoss1);
             }
 
         public :
@@ -171,6 +172,7 @@ namespace redtea {
                     shared_ptr<Type> c(new Type());
                     c->setParam(this->getParam());
                     c->setInputs(this->getInputs());
+                    c->setOptimizer(this->getOptimizer());
                     return c;
                 }
                 
@@ -182,17 +184,20 @@ namespace redtea {
             void forward() {
                 Tensor::forward();
                 
-                this->getOutput() = inputs[0]->getOutput()
-                                         *inputs[1]->getOutput();
+                this->getOutput() = inputs[0]->getOutput() 
+                                        * inputs[1]->getOutput();
             }
 
-            void backward(Optimizer& opti) {
-                inputs[0]->getLoss() = 
-                    this->getLoss()*inputs[1]->getOutput().transpose();
-                inputs[1]->getLoss() = 
-                    inputs[0]->getOutput().transpose() * this->getLoss();
+            void backward(const MatrixX& deltaLoss) {
+                MatrixX deltaLoss0 = 
+                           deltaLoss * inputs[1]->getOutput().transpose();
+                MatrixX deltaLoss1 =
+                           inputs[0]->getOutput().transpose() * deltaLoss;
+                inputs[0]->addLoss(deltaLoss0);
+                inputs[1]->addLoss(deltaLoss1); 
                 
-                Tensor::backward(opti);    
+                inputs[0]->backward(deltaLoss0);
+                inputs[1]->backward(deltaLoss1);    
             }
 
         public :

@@ -14,6 +14,7 @@ namespace redtea{
     namespace core{
                 Param::Param() {
                     forwarded = false;
+                    updated = false;
                 }
                 bool Param::getForwarded() {
                     return forwarded;
@@ -21,7 +22,12 @@ namespace redtea{
                 void Param::setForwarded(bool f) {
                     forwarded = f;
                 }
-
+                bool Param::getUpdated() {
+                    return updated;
+                }
+                bool Param::setUpdated(bool u) {
+                    updated = u;
+                }
                 MatrixX& Param::getOutput() {
                     return tensorOutput;
                 }
@@ -68,7 +74,20 @@ namespace redtea{
                 void Tensor::setInputs(const RefVector<Tensor>& inputs) {
                     this->inputs = inputs;
                 }
+                shared_ptr<Optimizer> Tensor::getOptimizer() const {
+                    return optimizer;
+                }
+                void Tensor::setOptimizer(const shared_ptr<Optimizer>& opti) {
+                    this->optimizer = opti;
+                }
+                void Tensor::setOptimizer(const Optimizer& opti) {
+                    if(optimizer) return;
 
+                    optimizer = opti.copy();
+                    for(int i=0;i<inputs.size();i++) {
+                        inputs[i]->setOptimizer(opti);
+                    }
+                }
 
                 Tensor::Tensor(const Tensor& other) {
                     set(other);
@@ -79,14 +98,18 @@ namespace redtea{
                     shared_ptr<Type> c(new Type());
                     c->setParam(this->getParam());
                     c->setInputs(this->getInputs());
+                    c->setOptimizer(this->getOptimizer());
                     return c;
                 }
 
                 Tensor& Tensor::set(const Tensor& other) {
                     this->param = other.getParam();
                     this->inputs = other.getInputs();
+                    this->optimizer = other.getOptimizer();
                     return *this;
                 }
+
+                
 
                 /*
                 * It will be time efficient if you call this method
@@ -95,12 +118,17 @@ namespace redtea{
                 */
                 void Tensor::reset() {
                     param->setForwarded(false);
+                    param->setUpdated(false);
+
+                    MatrixX& loss = param->getLoss();
+                    if(loss.rows() > 0) loss = MatrixX::Zero(
+                                            loss.rows(), loss.cols());
+ 
                     for(int i=0;i<inputs.size();i++) {
                         inputs[i]->reset();
                     }
                 }
                 void Tensor::forward() {
-                    cout<<"tensor forward."<<endl;
                     if(param->getForwarded()) return;
 
                     for(int i=0;i<inputs.size();i++) {
@@ -109,14 +137,30 @@ namespace redtea{
                     param->setForwarded(true);
                 }
 
-                void Tensor::backward(Optimizer& opti) {
+                void Tensor::backward(const MatrixX& deltaLoss) {
+                }
+
+                void Tensor::update() {
+                    if(param->getUpdated()) return;
                     for(int i=0;i<inputs.size();i++) {
-                        inputs[i]->backward(opti);
+                        inputs[i]->update();
                     }
+                    param->setUpdated(true);
+                }
+
+                void Tensor::setOutput(const MatrixX& output) {
+                    param->getOutput() = output;
                 }
 
                 MatrixX& Tensor::getOutput() {
                     return param->getOutput();
+                }
+
+                void Tensor::addLoss(const MatrixX& deltaLoss) {
+                    MatrixX& loss = param->getLoss();
+                    if(loss.rows() <= 0) loss = MatrixX::Zero(
+                                          deltaLoss.rows(), deltaLoss.cols()); 
+                    loss += deltaLoss;
                 }
 
                 MatrixX& Tensor::getLoss() {

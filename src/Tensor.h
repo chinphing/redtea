@@ -18,12 +18,15 @@ namespace redtea{
         class Param {
             protected :
                 bool forwarded;
+                bool updated;
                 MatrixX tensorLoss;
                 MatrixX tensorOutput;
             public :
                 Param(); 
                 bool getForwarded(); 
                 void setForwarded(bool f);
+                bool getUpdated();
+                bool setUpdated(bool u);
                 MatrixX& getOutput(); 
                 MatrixX& getLoss();
         };
@@ -45,7 +48,9 @@ namespace redtea{
                 shared_ptr<Param> param;
                 //input tensors, for back propergation
                 RefVector<Tensor> inputs;
-
+                
+                //optimizer for updating parameters
+                shared_ptr<Optimizer> optimizer;
             protected :
                 Tensor(); 
                 Tensor& set(const Tensor& other);
@@ -55,11 +60,18 @@ namespace redtea{
                 RefVector<Tensor>& getInputs();
                 RefVector<Tensor> getInputs() const;
                 void setInputs(const RefVector<Tensor>& inputs);
- 
+                shared_ptr<Optimizer> getOptimizer() const;
+                void setOptimizer(const shared_ptr<Optimizer>& opti);
+
             public :
                 Tensor(const Tensor& other); 
-
                 virtual shared_ptr<Tensor> copy() const; 
+                /*
+                  this method is different from setOptimizer(const shared_ptr<>
+                  in the way that it will recursively set its input node's
+                  optimizer, while the former one only sets its own property
+                */
+                void setOptimizer(const Optimizer& opti);
 
             public :
                 /*
@@ -69,12 +81,15 @@ namespace redtea{
                 */
                 virtual void reset();
                 virtual void forward(); 
-                virtual void backward(Optimizer& opti); 
+                virtual void backward(const MatrixX& deltaLoss);
+                virtual void update();
 
             public :
-                MatrixX& getOutput(); 
+                void setOutput(const MatrixX& output);
+                MatrixX& getOutput();
+                void addLoss(const MatrixX& deltaLoss); 
                 MatrixX& getLoss(); 
-               
+                
             public :
                 Tensor& operator=(const Tensor& other);
                 Add operator+(const Tensor& other); 

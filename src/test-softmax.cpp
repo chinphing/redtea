@@ -74,11 +74,10 @@ int main(int argc, char* argv[]) {
 
     //train
     LogisticLoss loss(act, y);
-    Optimizer opti(1e-2);
+    SGDOptimizer opti(1e-2);
+    loss.setOptimizer(opti);
     for(int i=0;i<epoch;i++) {
-        loss.reset();
-        loss.forward();
-        loss.backward(opti);
+        loss.train();
 
         cout<<", l: "<<loss.getTotalLoss()<<endl;
     }

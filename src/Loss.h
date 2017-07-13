@@ -44,10 +44,13 @@ namespace redtea {
                 Tensor::forward();
             } 
 
-            void backward(Optimizer& opti) {
+            void train() {
+                reset();
+                forward();
+
                 this->computeLoss();
-                inputs[0]->getLoss() = this->getLoss();
-                Tensor::backward(opti);
+                inputs[0]->backward(this->getLoss());
+                update();                
             }
         };
 
