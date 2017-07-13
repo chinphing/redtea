@@ -98,7 +98,7 @@ namespace redtea{
             public :
                 AdadeltaOptimizer() {
                     rho = 0.95;
-                    epsilon = 1e-6;
+                    epsilon = 1e-8;
                 }
                 AdadeltaOptimizer(double r, double e) {
                     rho = r;
@@ -147,6 +147,81 @@ namespace redtea{
                     exs = rho * exs + (1.0-rho) * temp;
                     
                     param -= delta;
+                }
+        };
+
+        class AdamOptimizer : public Optimizer {
+            protected :
+                int iteration;
+                double alpha;
+                double beta1;
+                double beta2;
+                double epsilon;
+                MatrixX m;
+                MatrixX n;
+
+            public :
+                AdamOptimizer() {
+                    iteration = 0;
+                    alpha = 1e-3;
+                    beta1 = 0.9;
+                    beta2 = 0.999;
+                    epsilon = 1e-8;
+                }
+                AdamOptimizer(double a, double b1, double b2, double e) {
+                    alpha = a;
+                    beta1 = b1;
+                    beta2 = b2;
+                    epsilon = e;
+                }
+
+                double getAlpha() const {
+                    return alpha;
+                }
+ 
+                double getBeta1() const {
+                    return beta1;
+                }
+
+                double getBeta2() const {
+                    return beta2;
+                }
+
+                double getEpsilon()  const {
+                    return epsilon;
+                }
+
+                typedef AdamOptimizer Type;
+                shared_ptr<Optimizer> copy() const{
+                    shared_ptr<Type> c(
+                        new Type(
+                            this->getAlpha(), this->getBeta1(), 
+                            this->getBeta2(), this->getEpsilon() ));
+                    return c;
+                }
+
+                void update(MatrixX& param, MatrixX& loss) {
+                    if(m.rows() <= 0) {
+                        m = MatrixX::Zero(param.rows(), param.cols());
+                    }
+                    if(n.rows() <= 0) {
+                        n = MatrixX::Zero(param.rows(), param.cols());
+                    }
+
+                    iteration ++;
+
+                    MatrixX temp=loss.array().square();;
+                    m = beta1 * m + (1.0 - beta1) * loss;
+                    n = beta2 * n + (1.0 - beta2) * temp;
+           
+                    MatrixX tempM = m / (1.0 - pow(beta1, iteration));
+                    MatrixX tempN = n / (1.0 - pow(beta2, iteration));
+
+                    temp = tempN.array().sqrt()+epsilon;
+                    temp = tempM.array() / temp.array();
+                    
+ 
+                    param -= alpha * temp;
                 }
         };
     };

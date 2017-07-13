@@ -77,7 +77,8 @@ int main(int argc, char* argv[]) {
     cout<<"w: "<<w.getOutput()<<endl;
     cout<<"b: "<<b.getOutput()<<endl;
 
-    MomentumOptimizer opti(0.8, 1e-3);
+    AdamOptimizer opti;
+    //MomentumOptimizer opti(0.8, 1e-3);
     //AdadeltaOptimizer opti;
     //SGDOptimizer opti(1e-3);
 
