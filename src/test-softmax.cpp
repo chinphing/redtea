@@ -74,7 +74,12 @@ int main(int argc, char* argv[]) {
 
     //train
     LogisticLoss loss(act, y);
-    SGDOptimizer opti(1e-2);
+
+    AdamOptimizer opti;
+    //AdadeltaOptimizer opti;
+    //MomentumOptimizer opti;
+    //SGDOptimizer opti(1e-3);
+
     loss.setOptimizer(opti);
     for(int i=0;i<epoch;i++) {
         loss.train();
