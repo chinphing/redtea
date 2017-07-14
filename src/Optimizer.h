@@ -24,9 +24,12 @@ namespace redtea{
                     loss = l.copy();
                 }
                 void run() {
+                    if(!loss) {
+                        cerr<<"Error: no loss to minimize!"<<endl;
+                    }
+
                     loss->reset();
                     loss->forward();
-
                     MatrixX& o = loss->getOutput();
                     const MatrixX& ones = MatrixX::Ones(o.rows(), o.cols());
 

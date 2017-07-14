@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
     //MomentumOptimizer opti;
     SGDOptimizer opti(1e-3);
 
-    loss.setOptimizer(opti);
+    opti.minimize(loss);
     for(int i=0;i<epoch;i++) {
         opti.run();
 
