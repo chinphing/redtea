@@ -77,19 +77,19 @@ int main(int argc, char* argv[]) {
     cout<<"w: "<<w.getOutput()<<endl;
     cout<<"b: "<<b.getOutput()<<endl;
 
-    AdamOptimizer opti;
+    //AdamOptimizer opti;
     //MomentumOptimizer opti(0.8, 1e-3);
     //AdadeltaOptimizer opti;
-    //SGDOptimizer opti(1e-3);
+    SGDOptimizer opti(1e-3);
+    opti.minimize(loss);
 
-    loss.setOptimizer(opti);
     for(int i=0;i<epoch;i++) {
-        loss.train();
+        opti.run();
  
         cout<<"o: "<<add.getOutput();
         cout<<", w: "<<w.getOutput();
         cout<<", b: "<<b.getOutput();
-        cout<<", l: "<<loss.getTotalLoss()<<endl;
+        cout<<", l: "<<loss.getOutput().sum()<<endl;
     }
 
     return 0;

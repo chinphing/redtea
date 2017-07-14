@@ -4,6 +4,7 @@
 #include <iostream>
 #include <list>
 #include "def.h"
+#include "Tensor.h"
 
 using namespace std;
 using namespace Eigen;
@@ -11,7 +12,28 @@ using namespace Eigen;
 namespace redtea{
     namespace core{
         class Optimizer {
+            protected :
+                shared_ptr<Tensor> loss;
             public :
+                void minimize(shared_ptr<Tensor> l) {
+                    l->setOptimizer(*this);
+                    loss = l;
+                }
+                void minimize(Tensor& l) {
+                    l.setOptimizer(*this);
+                    loss = l.copy();
+                }
+                void run() {
+                    loss->reset();
+                    loss->forward();
+
+                    MatrixX& o = loss->getOutput();
+                    const MatrixX& ones = MatrixX::Ones(o.rows(), o.cols());
+
+                    loss->backward(ones);
+                    loss->update();
+                }
+
                 virtual shared_ptr<Optimizer> copy() const = 0;
                 virtual void update(MatrixX& param, MatrixX& loss) = 0;
         };
@@ -19,7 +41,7 @@ namespace redtea{
         class SGDOptimizer : public Optimizer{
             protected :
                 double learningRate;
-
+                shared_ptr<Tensor> loss;
             public :
                 SGDOptimizer() {
                     learningRate = 1e-3;

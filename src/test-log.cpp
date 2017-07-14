@@ -67,17 +67,17 @@ int main(int argc, char* argv[]) {
    
     LogisticLoss loss(act, y);
 
-    AdamOptimizer opti;
-    //SGDOptimizer opti(1e-3);
+    //AdamOptimizer opti;
+    SGDOptimizer opti(1e-3);
     //AdadeltaOptimizer opti;
     //MomentumOptimizer opti(0.8, 1e-3);
 
-    loss.setOptimizer(opti);
+    opti.minimize(loss);
 
     for(int i=0;i<epoch;i++) {
-        loss.train();
+        opti.run();
 
-        cout<<", l: "<<loss.getTotalLoss()<<endl;
+        cout<<"loss: "<<loss.getOutput().sum()<<endl;
     }
 
     cout<<"o: "<<act.getOutput()<<endl;

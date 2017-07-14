@@ -111,7 +111,6 @@ namespace redtea {
         public :
             void forward() {
                 Tensor::forward();
-
                 MatrixX& a = inputs[0]->getOutput();
                 MatrixX& b = inputs[1]->getOutput();
                 assert(a.cols() == b.cols());
@@ -125,6 +124,8 @@ namespace redtea {
             }
 
             void backward(const MatrixX& deltaLoss) {
+                this->addLoss(deltaLoss);
+
                 MatrixX& a = inputs[0]->getOutput();
                 MatrixX& b = inputs[1]->getOutput();
 
@@ -138,8 +139,6 @@ namespace redtea {
                 } else {
                     deltaLoss1 = deltaLoss;
                 }
-                inputs[0]->addLoss(deltaLoss0);
-                inputs[1]->addLoss(deltaLoss1);
 
                 inputs[0]->backward(deltaLoss0);
                 inputs[1]->backward(deltaLoss1);
@@ -183,18 +182,17 @@ namespace redtea {
         public :
             void forward() {
                 Tensor::forward();
-                
                 this->getOutput() = inputs[0]->getOutput() 
                                         * inputs[1]->getOutput();
             }
 
             void backward(const MatrixX& deltaLoss) {
+                this->addLoss(deltaLoss);
+
                 MatrixX deltaLoss0 = 
                            deltaLoss * inputs[1]->getOutput().transpose();
                 MatrixX deltaLoss1 =
                            inputs[0]->getOutput().transpose() * deltaLoss;
-                inputs[0]->addLoss(deltaLoss0);
-                inputs[1]->addLoss(deltaLoss1); 
                 
                 inputs[0]->backward(deltaLoss0);
                 inputs[1]->backward(deltaLoss1);    

@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "def.h"
-#include "Optimizer.h"
 
 using namespace Eigen;
 using namespace std;
@@ -14,7 +13,7 @@ namespace redtea{
     namespace core{
         class Add;
         class Mul;
-
+        class Optimizer;
         class Param {
             protected :
                 bool forwarded;

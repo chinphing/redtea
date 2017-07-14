@@ -130,7 +130,7 @@ namespace redtea{
                 }
                 void Tensor::forward() {
                     if(param->getForwarded()) return;
-
+                    
                     for(int i=0;i<inputs.size();i++) {
                         inputs[i]->forward();
                     }
