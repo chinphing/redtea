@@ -50,7 +50,7 @@ namespace redtea{
                 
                 //optimizer for updating parameters
                 shared_ptr<Optimizer> optimizer;
-            protected :
+            public :
                 Tensor(); 
                 Tensor& set(const Tensor& other);
                 shared_ptr<Param>& getParam();
@@ -88,11 +88,13 @@ namespace redtea{
                 MatrixX& getOutput();
                 void addLoss(const MatrixX& deltaLoss); 
                 MatrixX& getLoss(); 
-                
+            public :
+                int rows() const;
+                int cols() const; 
             public :
                 Tensor& operator=(const Tensor& other);
-                Add operator+(const Tensor& other); 
-                Mul operator*(const Tensor& other);
+                Add operator+(const Tensor& other) const ; 
+                Mul operator*(const Tensor& other) const ;
         };
 
         typedef shared_ptr<Tensor> PTensor;

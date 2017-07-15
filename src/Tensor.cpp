@@ -138,6 +138,9 @@ namespace redtea{
                 }
 
                 void Tensor::backward(const MatrixX& deltaLoss) {
+                    for(int i=0;i<inputs.size();i++) {
+                        inputs[i]->backward(deltaLoss);
+                    }
                 }
 
                 void Tensor::update() {
@@ -167,16 +170,24 @@ namespace redtea{
                     return param->getLoss();
                 }
 
+                int Tensor::rows() const {
+                    return param->getOutput().rows();
+                }
+
+                int Tensor::cols() const {
+                    return param->getOutput().cols();
+                }
+
                 Tensor& Tensor::operator=(const Tensor& other) {
                     set(other);
                     return *this;
                 }
                 
-                Add Tensor::operator+(const Tensor& other) {
+                Add Tensor::operator+(const Tensor& other) const {
                     Add add(*this, other);
                     return add;
                 }
-                Mul Tensor::operator*(const Tensor& other) {
+                Mul Tensor::operator*(const Tensor& other) const {
                     Mul mul(*this, other);
                     return mul;
                 }
