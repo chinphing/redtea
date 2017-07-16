@@ -12,30 +12,6 @@ using namespace std;
 
 namespace redtea{
     namespace core{
-                Param::Param() {
-                    forwarded = false;
-                    updated = false;
-                }
-                bool Param::getForwarded() {
-                    return forwarded;
-                }
-                void Param::setForwarded(bool f) {
-                    forwarded = f;
-                }
-                bool Param::getUpdated() {
-                    return updated;
-                }
-                bool Param::setUpdated(bool u) {
-                    updated = u;
-                }
-                MatrixX& Param::getOutput() {
-                    return tensorOutput;
-                }
-
-                MatrixX& Param::getLoss() {
-                    return tensorLoss;
-                }
-
 
                 template<class T>
                 RefVector<T>::RefVector() : vector<shared_ptr<T>>() {} 
@@ -117,10 +93,10 @@ namespace redtea{
                 *
                 */
                 void Tensor::reset() {
-                    param->setForwarded(false);
-                    param->setUpdated(false);
+                    param->forwarded = false;
+                    param->updated = false;
 
-                    MatrixX& loss = param->getLoss();
+                    MatrixX& loss = param->tensorLoss;
                     if(loss.rows() > 0) loss = MatrixX::Zero(
                                             loss.rows(), loss.cols());
  
@@ -129,12 +105,12 @@ namespace redtea{
                     }
                 }
                 void Tensor::forward() {
-                    if(param->getForwarded()) return;
+                    if(param->forwarded) return;
                     
                     for(int i=0;i<inputs.size();i++) {
                         inputs[i]->forward();
                     }
-                    param->setForwarded(true);
+                    param->forwarded = true;
                 }
 
                 void Tensor::backward(const MatrixX& deltaLoss) {
@@ -144,38 +120,38 @@ namespace redtea{
                 }
 
                 void Tensor::update() {
-                    if(param->getUpdated()) return;
+                    if(param->updated) return;
                     for(int i=0;i<inputs.size();i++) {
                         inputs[i]->update();
                     }
-                    param->setUpdated(true);
+                    param->updated = true;
                 }
 
                 void Tensor::setOutput(const MatrixX& output) {
-                    param->getOutput() = output;
+                    param->tensorOutput = output;
                 }
 
                 MatrixX& Tensor::getOutput() {
-                    return param->getOutput();
+                    return param->tensorOutput;
                 }
 
                 void Tensor::addLoss(const MatrixX& deltaLoss) {
-                    MatrixX& loss = param->getLoss();
+                    MatrixX& loss = param->tensorLoss;
                     if(loss.rows() <= 0) loss = MatrixX::Zero(
                                           deltaLoss.rows(), deltaLoss.cols()); 
                     loss += deltaLoss;
                 }
 
                 MatrixX& Tensor::getLoss() {
-                    return param->getLoss();
+                    return param->tensorLoss;
                 }
 
                 int Tensor::rows() const {
-                    return param->getOutput().rows();
+                    return param->tensorOutput.rows();
                 }
 
                 int Tensor::cols() const {
-                    return param->getOutput().cols();
+                    return param->tensorOutput.cols();
                 }
 
                 Tensor& Tensor::operator=(const Tensor& other) {

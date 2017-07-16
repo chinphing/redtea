@@ -14,20 +14,11 @@ namespace redtea{
         class Add;
         class Mul;
         class Optimizer;
-        class Param {
-            protected :
-                bool forwarded;
-                bool updated;
+        struct Param {
+                bool forwarded = false;
+                bool updated = false;
                 MatrixX tensorLoss;
                 MatrixX tensorOutput;
-            public :
-                Param(); 
-                bool getForwarded(); 
-                void setForwarded(bool f);
-                bool getUpdated();
-                bool setUpdated(bool u);
-                MatrixX& getOutput(); 
-                MatrixX& getLoss();
         };
 
         template<class T>
