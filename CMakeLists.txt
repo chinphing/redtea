@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.5)
 
 PROJECT(readtea)
 
+
 SET(CMAKE_C_COMPILER g++)
 add_compile_options(-std=c++11)
 
@@ -22,3 +23,4 @@ ADD_EXECUTABLE(test-lsl src/test-lsl.cpp src/Tensor.cpp)
 ADD_EXECUTABLE(test-log src/test-log.cpp src/Tensor.cpp)
 ADD_EXECUTABLE(test-softmax src/test-softmax.cpp src/Tensor.cpp)
 ADD_EXECUTABLE(test-layer src/test-layer.cpp src/Tensor.cpp)
+ADD_EXECUTABLE(test-tanh src/test-tanh.cpp src/Tensor.cpp)
