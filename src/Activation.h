@@ -187,8 +187,8 @@ namespace redtea {
      
                 for(int i=0;i<in.rows();i++) {
                     for(int j=0;j<in.cols();j++) {
-                    
-					o(i, j) = (1.0 - exp(-in(i, j)*2.0))/(1.0 + exp(-in(i, j)*2.0));
+                    double tmp = exp(-in(i, j));
+					o(i, j) = (1.0 - tmp*2.0)/(1.0 + tmp*2.0);
 					
                     }
                 }
