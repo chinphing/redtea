@@ -15,10 +15,19 @@ namespace redtea{
         class Mul;
         class Optimizer;
         struct Param {
-                bool forwarded = false;
-                bool updated = false;
+                bool forwarded;
+                bool updated;
+                int rows;
+                int cols;
                 MatrixX tensorLoss;
                 MatrixX tensorOutput;
+
+                Param() {
+                    forwarded = false;
+                    updated = false;
+                    rows = 0;
+                    cols = 0;
+                }
         };
 
         template<class T>
@@ -43,6 +52,7 @@ namespace redtea{
                 shared_ptr<Optimizer> optimizer;
             public :
                 Tensor(); 
+                Tensor(int r, int c);
                 Tensor& set(const Tensor& other);
                 shared_ptr<Param>& getParam();
                 shared_ptr<Param> getParam() const;
@@ -81,7 +91,9 @@ namespace redtea{
                 MatrixX& getLoss(); 
             public :
                 int rows() const;
+                void setRows(int r);
                 int cols() const; 
+                void setCols(int c);
             public :
                 Tensor& operator=(const Tensor& other);
                 Add operator+(const Tensor& other) const ; 

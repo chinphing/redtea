@@ -14,9 +14,13 @@ namespace redtea {
                 Variable() : Tensor() { }
                 Variable(const MatrixX& mat) : Tensor() {
                     this->getOutput() = mat;
+                    setRows(mat.rows());
+                    setCols(mat.cols());
                 }
                 Variable(int row, int col) : Tensor(){
                     this->getOutput().resize(row, col);
+                    setRows(row);
+                    setCols(col);
                 }
             public :
                 Variable(const Variable& other) {
@@ -52,9 +56,13 @@ namespace redtea {
                 Constant() : Tensor() {}
                 Constant(const MatrixX& mat) : Tensor(){
                     this->getOutput() = mat;
+                    setRows(mat.rows());
+                    setCols(mat.cols());
                 }
                 Constant(int row, int col) : Tensor(){
                     this->getOutput().resize(row, col);
+                    setRows(row);
+                    setCols(col);
                 }
             public :
                 Constant(const Constant& other) {
@@ -82,13 +90,19 @@ namespace redtea {
         public :
             Add() : Tensor() {}
             Add(PTensor a, PTensor b) : Tensor() {
+                assert(a->cols() == b->cols());
                 inputs.push_back(a);
                 inputs.push_back(b);
+                setRows(a->rows());
+                setCols(a->cols());
             }
 
             Add(const Tensor& a, const Tensor& b) {
+                assert(a.cols() == b.cols());
                 inputs.push_back(a.copy());
                 inputs.push_back(b.copy());
+                setRows(a.rows());
+                setCols(a.cols());
             }
         public :
                 Add(const Add& other) {
@@ -113,7 +127,6 @@ namespace redtea {
                 Tensor::forward();
                 MatrixX& a = inputs[0]->getOutput();
                 MatrixX& b = inputs[1]->getOutput();
-                assert(a.cols() == b.cols());
 
                 MatrixX& o = this->getOutput();
                 if(a.rows() != b.rows()) {
@@ -154,12 +167,18 @@ namespace redtea {
         public :
             Mul() : Tensor() {}
             Mul(PTensor a, PTensor b) : Tensor(){
+                assert(a->cols() == b->rows());
                 inputs.push_back(a);
                 inputs.push_back(b);
+                setRows(a->rows());
+                setCols(b->cols());                
             }
             Mul(const Tensor& a, const Tensor& b) : Tensor(){
+                assert(a.cols() == b.rows());
                 inputs.push_back(a.copy());
                 inputs.push_back(b.copy());
+                setRows(a.rows());
+                setCols(b.cols());
             }
         public :
                 Mul(const Mul& other) {

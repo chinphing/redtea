@@ -12,13 +12,14 @@ AUX_SOURCE_DIRECTORY(src DIR_SRCS)
 #head file path  
 INCLUDE_DIRECTORIES(  
     ../eigen/
+    src/
 )  
 
 #source directory  
-AUX_SOURCE_DIRECTORY(./ DIR_SRCS)  
+AUX_SOURCE_DIRECTORY(src DIR_SRCS)  
 
 #add executable file  
-ADD_EXECUTABLE(test-lsl src/test-lsl.cpp src/Tensor.cpp)  
-ADD_EXECUTABLE(test-log src/test-log.cpp src/Tensor.cpp)
-ADD_EXECUTABLE(test-softmax src/test-softmax.cpp src/Tensor.cpp)
-ADD_EXECUTABLE(test-layer src/test-layer.cpp src/Tensor.cpp)
+ADD_EXECUTABLE(test-lsl test/test-lsl.cpp ${DIR_SRCS})  
+ADD_EXECUTABLE(test-log test/test-log.cpp ${DIR_SRCS})
+ADD_EXECUTABLE(test-softmax test/test-softmax.cpp ${DIR_SRCS})
+ADD_EXECUTABLE(test-layer test/test-layer.cpp ${DIR_SRCS})

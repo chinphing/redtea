@@ -14,13 +14,19 @@ namespace redtea {
                 LeastSquareLoss() : Tensor() {}
                 LeastSquareLoss(PTensor predict, PTensor target) 
                                : Tensor() {
+                    assert(predict->cols() == target->cols());
                     inputs.push_back(predict);
                     inputs.push_back(target);
+                    setRows(predict->rows());
+                    setCols(predict->cols());
                 }
                 LeastSquareLoss(Tensor& predict, Tensor& target)
                                : Tensor() {
+                    assert(predict.cols() == target.cols());
                     inputs.push_back(predict.copy());
                     inputs.push_back(target.copy());
+                    setRows(predict.rows());
+                    setCols(predict.cols());
                 }
             public :
                 typedef LeastSquareLoss Type;
@@ -67,13 +73,19 @@ namespace redtea {
                 LogisticLoss() : Tensor() {}
                 LogisticLoss(PTensor predict, PTensor target)
                                : Tensor() {
+                    assert(predict->cols() == target->cols());
                     inputs.push_back(predict);
                     inputs.push_back(target);
+                    setRows(predict->rows());
+                    setCols(predict->cols());
                 }
                 LogisticLoss(Tensor& predict, Tensor& target)
                                : Tensor()  {
+                    assert(predict.cols() == target.cols());
                     inputs.push_back(predict.copy());
                     inputs.push_back(target.copy());
+                    setRows(predict.rows());
+                    setCols(predict.cols());
                 }
             public :
                 typedef LogisticLoss Type;

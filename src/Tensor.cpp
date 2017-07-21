@@ -32,6 +32,11 @@ namespace redtea{
                 Tensor::Tensor() {
                     param = shared_ptr<Param>(new Param);
                 }
+                Tensor::Tensor(int r, int c) {
+                    param = shared_ptr<Param>(new Param);
+                    param->rows = r;
+                    param->cols = c;
+                }
                 shared_ptr<Param>& Tensor::getParam() {
                     return param;
                 }
@@ -147,11 +152,16 @@ namespace redtea{
                 }
 
                 int Tensor::rows() const {
-                    return param->tensorOutput.rows();
+                    return param->rows;
                 }
-
+                void Tensor::setRows(int r) {
+                    param->rows = r;
+                }
                 int Tensor::cols() const {
-                    return param->tensorOutput.cols();
+                    return param->cols;
+                }
+                void Tensor::setCols(int c) {
+                    param->cols = c;
                 }
 
                 Tensor& Tensor::operator=(const Tensor& other) {

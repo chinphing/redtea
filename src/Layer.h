@@ -24,6 +24,8 @@ class DenseLayer : public Tensor {
             Add o = x * w + b;
 
             //directly output to the DenseLayer class
+            setRows(o.rows());
+            setCols(o.cols());
             o.setParam(this->getParam());
 
             inputs.push_back(o.copy());

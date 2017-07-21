@@ -15,9 +15,13 @@ namespace redtea {
             Sigmoid() : Tensor() {}
             Sigmoid(PTensor in) : Tensor() {
                 inputs.push_back(in);
+                setRows(in->rows());
+                setCols(in->cols());
             }
             Sigmoid(Tensor& in) : Tensor() {
                 inputs.push_back(in.copy());
+                setRows(in.rows());
+                setCols(in.cols());
             }
         public :
                 Sigmoid(const Sigmoid& other) {
@@ -79,9 +83,13 @@ namespace redtea {
             Softmax() : Tensor() {}
             Softmax(PTensor in) : Tensor(){
                 inputs.push_back(in);
+                setRows(in->rows());
+                setCols(in->cols());
             }
             Softmax(Tensor& in) : Tensor() {
                 inputs.push_back(in.copy());
+                setRows(in.rows());
+                setCols(in.cols());
             }
         public :
                 Softmax(const Softmax& other) {
