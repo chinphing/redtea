@@ -54,7 +54,7 @@ namespace redtea {
                     return shared_ptr<Variable>(new Variable(row, col));
                 }
 				static Variable random(int row, int col) {
-					return Variable(MatrixX::random(row,col));
+					return Variable(MatrixX::Random(row,col));
 				}
         };
 

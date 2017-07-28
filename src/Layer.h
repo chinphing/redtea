@@ -50,46 +50,70 @@ namespace redtea {
 		
 		//output class of LstmLayer
 		class LstmCell : public Tensor {
+			
+			struct LstmCellParam : public Param {
+				shared_ptr<Tensor> C;
+				shared_ptr<Tensor> H;
+			};
+			
 			public :
                 LstmCell() : Tensor() {}
                 LstmCell(PTensor in, PTensor c0, PTensor h0, int outputSize, 
-					PTensor w_f, PTensor b_f, 
-					PTensor w_i, PTensor b_i,
-					PTensor w_c, PTensor b_c,
-					PTensor w_o, PTensor b_o) : Tensor() {
+					PTensor w_xf, PTensor w_hf, PTensor b_f, 
+					PTensor w_xi, PTensor w_hi, PTensor b_i,
+					PTensor w_xc, PTensor w_hc, PTensor b_c,
+					PTensor w_xo, PTensor w_ho, PTensor b_o) : Tensor() {
                     _init(*in, *c0, *h0, outputSize,
-						*w_f, *b_f, *w_i, *b_i, *w_c, *b_c, *w_o, *b_o);
+						*w_xf, *w_hf, *b_f, *w_xi, *w_hi, *b_i, 
+						*w_xc, *w_hc, *b_c, *w_xo, *w_ho, *b_o);
                 }
 
                 LstmCell(const Tensor& in, const Tensor& c0, 
 					const Tensor& h0, int outputSize,
-					const Tensor& w_f, const Tensor& b_f, 
-					const Tensor& w_i, const Tensor& b_i,
-					const Tensor& w_c, const Tensor& b_c,
-					const Tensor& w_o, const Tensor& b_o) : Tensor() {
+					const Tensor& w_xf, const Tensor& w_hf, const Tensor& b_f, 
+					const Tensor& w_xi, const Tensor& w_hi, const Tensor& b_i,
+					const Tensor& w_xc, const Tensor& w_hc, const Tensor& b_c,
+					const Tensor& w_xo, const Tensor& w_ho, const Tensor& b_o) : Tensor() {
                     _init(in, c0, h0, outputSize,
-						w_f, b_f, w_i, b_i, w_c, b_c, w_o, b_o);
+						w_xf, w_hf, b_f, w_xi, w_hi, b_i, 
+						w_xc, w_hc, b_c, w_xo, w_ho, b_o);
                 }
 
 				//reference http://www.jianshu.com/p/9dc9f41f0b29
                 void _init(const Tensor& x, const Tensor& c0, 
 					const Tensor& h0, int outputSize,
-					const Tensor& w_f, const Tensor& b_f, 
-					const Tensor& w_i, const Tensor& b_i,
-					const Tensor& w_c, const Tensor& b_c,
-					const Tensor& w_o, const Tensor& b_o) {
+					const Tensor& w_xf, const Tensor& w_hf, const Tensor& b_f, 
+					const Tensor& w_xi, const Tensor& w_hi, const Tensor& b_i,
+					const Tensor& w_xc, const Tensor& w_hc, const Tensor& b_c,
+					const Tensor& w_xo, const Tensor& w_ho, const Tensor& b_o) {
                     
-					Sigmoid f = Sigmoid(x * w_f + h0 * w_f + b_f);
-					Sigmoid i = Sigmoid(x * w_i + h0 * w_i + b_i);
-					Sigmoid o = Sigmoid(x * w_o + h0 * w_o + b_o);
+					shared_ptr<LstmCellParam> lstmCellParam(new LstmCellParam());
+					param = lstmCellParam;
 					
-					Add updateC = x * w_c + h0 * w_c + b_c;
-					Add C = MulElt(f, c0) + MulElt(i, Tanh(updateC));
+					Sigmoid f = Sigmoid(x * w_xf + h0 * w_hf + b_f);
+					Sigmoid i = Sigmoid(x * w_xi + h0 * w_hi + b_i);
+					Sigmoid o = Sigmoid(x * w_xo + h0 * w_ho + b_o);
+					Tanh c = Tanh(x * w_xc + h0 * w_hc + b_c);
+					
+					Add C = MulElt(f, c0) + MulElt(i, c);
 					MulElt output = MulElt(o, C);
 					
                     output.setParam(this->getParam());
                     inputs.push_back(output.copy());
+					
+					lstmCellParam->C = C.copy();
+					lstmCellParam->H = output.copy();
                 }
+				
+				shared_ptr<Tensor>& getC() {
+					LstmCellParam* lstmCellParam = (LstmCellParam*)param.get();
+					return lstmCellParam->C;
+				}
+				
+				shared_ptr<Tensor>& getH() {
+					LstmCellParam* lstmCellParam = (LstmCellParam*)param.get();
+					return lstmCellParam->H;
+				}
             public :
 				typedef LstmCell Type;
                 LstmCell(const Type& other) {
@@ -113,35 +137,80 @@ namespace redtea {
 		class LstmLayer : public Tensor{
 			
 			struct LstmParam : public Param {
-				int outputSize;
-				shared_ptr<Tensor> w_f, b_f;
-				shared_ptr<Tensor> w_i, b_i;
-				shared_ptr<Tensor> w_c, b_c;
-				shared_ptr<Tensor> w_o, b_o;
+				shared_ptr<Tensor> w_xf, w_hf, b_f;
+				shared_ptr<Tensor> w_xi, w_hi, b_i;
+				shared_ptr<Tensor> w_xc, w_hc, b_c;
+				shared_ptr<Tensor> w_xo, w_ho, b_o;
+				shared_ptr<Tensor> h0, c0;
 				RefVector<LstmCell> outputs;
 			};
 				
 			public :
                 LstmLayer(){
-					param = shared_ptr<LstmParam>(new Param);
+					param = shared_ptr<LstmParam>(new LstmParam());
 				}
+				
                 LstmLayer(const RefVector<Tensor> ins, int outputSize) {
-					param = shared_ptr<LstmParam>(new Param);
 					assert(ins.size() > 0);
 					
-					int inputRow = ins[0].rows();
-					int inputCol = ins[0].cols();
-					w_f = Variable::random(inputCol, outputSize);
-					b_f = Variable::random(inputRow, outputSize);
-					w_i = Variable::random(inputCol, outputSize);
-					b_i = Variable::random(inputRow, outputSize);
-					w_c = Variable::random(inputCol, outputSize);
-					b_c = Variable::random(inputRow, outputSize);
-					w_o = Variable::random(inputCol, outputSize);
-					b_o = Variable::random(inputRow, outputSize);
+					shared_ptr<LstmParam> lstmParam(new LstmParam());
+					param = lstmParam;
 					
-					Constant h0 = Constant::zeros();
+					
+					int inputRow = ins[0]->rows();
+					int inputCol = ins[0]->cols();
+					
+					lstmParam->w_xf = Variable::random(inputCol, outputSize).copy();
+					lstmParam->w_hf = Variable::random(outputSize, outputSize).copy();
+					lstmParam->b_f = Variable::random(inputRow, outputSize).copy();
+					lstmParam->w_xi = Variable::random(inputCol, outputSize).copy();
+					lstmParam->w_hi = Variable::random(outputSize, outputSize).copy();
+					lstmParam->b_i = Variable::random(inputRow, outputSize).copy();
+					lstmParam->w_xc = Variable::random(inputCol, outputSize).copy();
+					lstmParam->w_hc = Variable::random(outputSize, outputSize).copy();
+					lstmParam->b_c = Variable::random(inputRow, outputSize).copy();
+					lstmParam->w_xo = Variable::random(inputCol, outputSize).copy();
+					lstmParam->w_ho = Variable::random(outputSize, outputSize).copy();
+					lstmParam->b_o = Variable::random(inputRow, outputSize).copy();
+					
+					lstmParam->h0 = Constant::zeros(inputRow, outputSize).copy();
+					lstmParam->c0 = Constant::zeros(inputRow, outputSize).copy();
+					
+					shared_ptr<LstmCell>  cell;
+					for(int i=0;i<ins.size();i++) {
+						if(i == 0) {
+							cell = shared_ptr<LstmCell>(
+								new LstmCell(ins[i], lstmParam->c0, lstmParam->h0, outputSize, 
+											 lstmParam->w_xf, lstmParam->w_hf, lstmParam->b_f, 
+											 lstmParam->w_xi, lstmParam->w_hi, lstmParam->b_i,
+											 lstmParam->w_xc, lstmParam->w_hc, lstmParam->b_c,
+											 lstmParam->w_xo, lstmParam->w_ho, lstmParam->b_o) );
+							lstmParam->outputs.push_back(cell);
+						}else {
+							cell = shared_ptr<LstmCell>(
+								new LstmCell(ins[i], cell->getC(), cell->getH(), outputSize, 
+											 lstmParam->w_xf, lstmParam->w_hf, lstmParam->b_f, 
+											 lstmParam->w_xi, lstmParam->w_hi, lstmParam->b_i,
+											 lstmParam->w_xc, lstmParam->w_hc, lstmParam->b_c,
+											 lstmParam->w_xo, lstmParam->w_ho, lstmParam->b_o) );
+							lstmParam->outputs.push_back(cell);
+						}
+					}
+					
+					setRows(inputRow);
+					setCols(outputSize);
+					
+                    inputs.push_back(cell);
                 }
+				
+			public :
+				void forward() {
+					Tensor::forward();
+					
+					LstmParam* lstmParam = (LstmParam*)param.get();
+					const shared_ptr<LstmCell> lstmCell = *lstmParam->outputs.end();
+					this->getOutput() = lstmCell->getOutput();
+				}
 				
 			public :
 				typedef LstmLayer Type;
