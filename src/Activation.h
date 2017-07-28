@@ -9,7 +9,78 @@ using namespace std;
 
 namespace redtea {
     namespace core {
-        
+        class ReLU : public Tensor {
+        public :
+            ReLU() : Tensor() {}
+            ReLU(PTensor in) : Tensor() {
+                inputs.push_back(in);
+                setRows(in->rows());
+                setCols(in->cols());
+            }
+            ReLU(Tensor& in) : Tensor() {
+                inputs.push_back(in.copy());
+                setRows(in.rows());
+                setCols(in.cols());
+            }
+        public :
+                ReLU(const ReLU& other) {
+                    set(other);
+                }
+
+                typedef ReLU Type;
+                shared_ptr<Tensor> copy() const{
+                    shared_ptr<Tensor> c(new Type());
+                    c->setParam(this->getParam());
+                    c->setInputs(this->getInputs());
+                    c->setOptimizer(this->getOptimizer());
+                    return c;
+                }
+				
+				Type& operator=(const Type& other) {
+                    this->set(other);
+                    return *this;
+                }
+
+        public :
+            void forward() {
+                Tensor::forward();
+
+                MatrixX& in = inputs[0]->getOutput();
+                MatrixX& o = this->getOutput();
+                o.resize(in.rows(), in.cols());
+
+                for(int i=0;i<in.rows();i++) {
+                    for(int j=0;j<in.cols();j++) {
+                        o(i, j) = in(i, j) > 0 ? in(i, j): 0; 
+                    }
+                }
+            }
+
+            void backward(const MatrixX& deltaLoss) {
+                this->addLoss(deltaLoss);
+
+                MatrixX& o = this->getOutput();
+                const MatrixX& l = deltaLoss;
+
+                MatrixX deltaLossIn = MatrixX::Zero(o.rows(), o.cols());
+                for(int i=0;i<o.rows();i++) {
+                    for(int j=0;j<o.cols();j++) {
+                        if(o(i, j) > 0) {
+                            deltaLossIn(i, j) = l(i, j);
+                        } else {
+                            deltaLossIn(i, j) = 0;
+                        }
+                    }
+                }
+                inputs[0]->backward(deltaLossIn);
+            }
+        public :
+            static shared_ptr<Type> create(PTensor in) {
+                return shared_ptr<Type>(new Type(in));
+            }
+
+        };
+ 
         class Sigmoid : public Tensor {
         public :
             Sigmoid() : Tensor() {}
@@ -18,7 +89,7 @@ namespace redtea {
                 setRows(in->rows());
                 setCols(in->cols());
             }
-            Sigmoid(Tensor& in) : Tensor() {
+            Sigmoid(const Tensor& in) : Tensor() {
                 inputs.push_back(in.copy());
                 setRows(in.rows());
                 setCols(in.cols());
@@ -30,13 +101,16 @@ namespace redtea {
                  
                 typedef Sigmoid Type;
                 shared_ptr<Tensor> copy() const{
-                    shared_ptr<Type> c(new Type());
+                    shared_ptr<Tensor> c(new Type());
                     c->setParam(this->getParam());
                     c->setInputs(this->getInputs());
                     c->setOptimizer(this->getOptimizer());
                     return c;
                 }
-
+				Type& operator=(const Type& other) {
+                    this->set(other);
+                    return *this;
+                }
         public :
             void forward() {
                 Tensor::forward();
@@ -86,7 +160,7 @@ namespace redtea {
                 setRows(in->rows());
                 setCols(in->cols());
             }
-            Softmax(Tensor& in) : Tensor() {
+            Softmax(const Tensor& in) : Tensor() {
                 inputs.push_back(in.copy());
                 setRows(in.rows());
                 setCols(in.cols());
@@ -98,11 +172,15 @@ namespace redtea {
                 
                 typedef Softmax Type;
                 shared_ptr<Tensor> copy() const{
-                    shared_ptr<Type> c(new Type());
+                    shared_ptr<Tensor> c(new Type());
                     c->setParam(this->getParam());
                     c->setInputs(this->getInputs());
                     c->setOptimizer(this->getOptimizer());
                     return c;
+                }
+				Type& operator=(const Type& other) {
+                    this->set(other);
+                    return *this;
                 }
         public :
             void forward() {
@@ -170,25 +248,28 @@ namespace redtea {
                 setRows(in->rows());
                 setCols(in->cols());
             }
-            Tanh(Tensor& in) : Tensor() {
+            Tanh(const Tensor& in) : Tensor() {
                 inputs.push_back(in.copy());
                 setRows(in.rows());
                 setCols(in.cols());
             }
         public :
-                Tanh(const Tanh& other) {
-                    set(other);
-                }
+            Tanh(const Tanh& other) {
+                set(other);
+            }
                  
-                typedef Tanh Type;
-                shared_ptr<Tensor> copy() const{
-                    shared_ptr<Type> c(new Type());
-                    c->setParam(this->getParam());
-                    c->setInputs(this->getInputs());
-                    c->setOptimizer(this->getOptimizer());
-                    return c;
-                }
-
+            typedef Tanh Type;
+            shared_ptr<Tensor> copy() const{
+                shared_ptr<Tensor> c(new Type());
+                c->setParam(this->getParam());
+                c->setInputs(this->getInputs());
+                c->setOptimizer(this->getOptimizer());
+                return c;
+			}
+			Type& operator=(const Type& other) {
+                this->set(other);
+                return *this;
+            }
         public :
             void forward() {
                 Tensor::forward();

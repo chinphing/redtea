@@ -30,19 +30,21 @@ namespace redtea {
                 }
             public :
                 typedef LeastSquareLoss Type;
-                typedef shared_ptr<Type> PType;
                 LeastSquareLoss(Type& other) {
                     set(other);
                 }
 
                 shared_ptr<Tensor> copy() const{
-                    cout<<"copt Leaset"<<endl;
-                    PType c(new Type());
+                    shared_ptr<Tensor> c(new Type());
                     c->setParam(this->getParam());
                     c->setInputs(this->getInputs());
                     c->setOptimizer(this->getOptimizer());
                     return c;
                 }
+				Type& operator=(const Type& other) {
+					this->set(other);
+					return *this;
+				}
             public :
                 void forward() {
                     Tensor::forward();
@@ -89,18 +91,21 @@ namespace redtea {
                 }
             public :
                 typedef LogisticLoss Type;
-                typedef shared_ptr<Type> PType;
                 LogisticLoss(Type& other) {
                     set(other);
                 }
 
                 shared_ptr<Tensor> copy() const{
-                    PType c(new Type());
+                    shared_ptr<Tensor> c(new Type());
                     c->setParam(this->getParam());
                     c->setInputs(this->getInputs());
                     c->setOptimizer(this->getOptimizer());
                     return c;
                 }
+				Type& operator=(const Type& other) {
+					this->set(other);
+					return *this;
+				}
             public :
                 void forward() {
                     Tensor::forward();

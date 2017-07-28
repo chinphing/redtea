@@ -29,11 +29,15 @@ namespace redtea {
 
                 typedef Variable Type;
                 shared_ptr<Tensor> copy() const{
-                    shared_ptr<Type> c(new Type());
+                    shared_ptr<Tensor> c(new Type());
                     c->setParam(this->getParam());
                     c->setInputs(this->getInputs());
                     c->setOptimizer(this->getOptimizer());
                     return c;
+                }
+				Type& operator=(const Type& other) {
+                    this->set(other);
+                    return *this;
                 }
             public :
                 void backward(const MatrixX& deltaLoss) {
@@ -49,6 +53,9 @@ namespace redtea {
                 static shared_ptr<Variable> create(int row, int col) {
                     return shared_ptr<Variable>(new Variable(row, col));
                 }
+				static Variable random(int row, int col) {
+					return Variable(MatrixX::random(row,col));
+				}
         };
 
         class Constant : public Tensor {
@@ -71,11 +78,15 @@ namespace redtea {
  
                 typedef Constant Type;
                 shared_ptr<Tensor> copy() const{
-                    shared_ptr<Type> c(new Type());
+                    shared_ptr<Tensor> c(new Type());
                     c->setParam(this->getParam());
                     c->setInputs(this->getInputs());
                     c->setOptimizer(this->getOptimizer());
                     return c;
+                }
+				Type& operator=(const Type& other) {
+                    this->set(other);
+                    return *this;
                 }
             public :
                 static shared_ptr<Constant> create(const MatrixX& mat) {
@@ -84,6 +95,12 @@ namespace redtea {
                 static shared_ptr<Constant> create(int row, int col) {
                     return shared_ptr<Constant>(new Constant(row, col));
                 }
+				static Constant zeros(int row, int col) {
+					return Constant(MatrixX::Zero(row,col));
+				}
+				static Constant ones(int row, int col) {
+					return Constant(MatrixX::Ones(row,col));
+				}
         };
         
         class Add : public Tensor {
@@ -111,14 +128,14 @@ namespace redtea {
 
                 typedef Add Type;
                 shared_ptr<Tensor> copy() const{
-                    shared_ptr<Type> c(new Type());
+                    shared_ptr<Tensor> c(new Type());
                     c->setParam(this->getParam());
                     c->setInputs(this->getInputs());
                     c->setOptimizer(this->getOptimizer());
                     return c;
                 }
 
-                Add& operator=(const Add& other) {
+                Type& operator=(const Type& other) {
                     this->set(other);
                     return *this;
                 }
@@ -187,15 +204,15 @@ namespace redtea {
                 
                 typedef Mul Type;
                 shared_ptr<Tensor> copy() const {
-                    shared_ptr<Type> c(new Type());
+                    shared_ptr<Tensor> c(new Type());
                     c->setParam(this->getParam());
                     c->setInputs(this->getInputs());
                     c->setOptimizer(this->getOptimizer());
                     return c;
                 }
                 
-                Mul& operator=(const Mul& other) {
-                    set(other);
+                Type& operator=(const Type& other) {
+                    this->set(other);
                     return *this;
                 }
         public :
@@ -223,6 +240,68 @@ namespace redtea {
             }
         };
         
+		//element wise multiplication
+        class MulElt : public Tensor {
+        public :
+            MulElt() : Tensor() {}
+            MulElt(PTensor a, PTensor b) : Tensor(){
+                assert(a->cols() == b->cols() 
+					&& a->rows() == b->rows());
+                inputs.push_back(a);
+                inputs.push_back(b);
+                setRows(a->rows());
+                setCols(a->cols());                
+            }
+            MulElt(const Tensor& a, const Tensor& b) : Tensor(){
+                assert(a.cols() == b.rows()
+					&& a.rows() == b.rows());
+                inputs.push_back(a.copy());
+                inputs.push_back(b.copy());
+                setRows(a.rows());
+                setCols(a.cols());
+            }
+        public :
+                MulElt(const MulElt& other) {
+                    set(other);
+                }
+                
+                typedef MulElt Type;
+                shared_ptr<Tensor> copy() const {
+                    shared_ptr<Tensor> c(new Type());
+                    c->setParam(this->getParam());
+                    c->setInputs(this->getInputs());
+                    c->setOptimizer(this->getOptimizer());
+                    return c;
+                }
+                
+                Type& operator=(const Type& other) {
+                    this->set(other);
+                    return *this;
+                }
+        public :
+            void forward() {
+                Tensor::forward();
+                this->getOutput() = inputs[0]->getOutput().array() 
+                                        * inputs[1]->getOutput().array();
+            }
+
+            void backward(const MatrixX& deltaLoss) {
+                this->addLoss(deltaLoss);
+
+                MatrixX deltaLoss0 = 
+                           deltaLoss.array() * inputs[1]->getOutput().array();
+                MatrixX deltaLoss1 =
+                           inputs[0]->getOutput().array() * deltaLoss.array();
+                
+                inputs[0]->backward(deltaLoss0);
+                inputs[1]->backward(deltaLoss1);
+            }
+
+        public :
+            static shared_ptr<MulElt> create(PTensor a, PTensor b) {
+                return shared_ptr<MulElt>(new MulElt(a, b));
+            }
+        };
     };
 };
 #endif

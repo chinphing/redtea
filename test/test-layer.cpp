@@ -9,6 +9,7 @@
 #include "Loss.h"
 #include "Optimizer.h"
 #include "Layer.h"
+#include "Activation.h"
 
 using namespace std;
 using namespace Eigen;
@@ -65,7 +66,6 @@ int main(int argc, char* argv[]) {
     Constant y(target);
 
     DenseLayer dense(x, 2);  
-
 
     LeastSquareLoss loss(dense, y);
 
