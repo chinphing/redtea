@@ -57,8 +57,6 @@ namespace redtea {
             }
 
             void backward(const MatrixX& deltaLoss) {
-                this->addLoss(deltaLoss);
-
                 MatrixX& o = this->getOutput();
                 const MatrixX& l = deltaLoss;
 
@@ -127,8 +125,6 @@ namespace redtea {
             }
 
             void backward(const MatrixX& deltaLoss) {
-                this->addLoss(deltaLoss);
-
                 MatrixX& o = this->getOutput();
                 const MatrixX& l = deltaLoss;
 
@@ -214,7 +210,6 @@ namespace redtea {
             }
 
             void backward(const MatrixX& deltaLoss) {
-                this->addLoss(deltaLoss);
 
                 MatrixX& o = this->getOutput();
                 const MatrixX& l = deltaLoss;
@@ -287,8 +282,6 @@ namespace redtea {
             }
 
             void backward(const MatrixX& deltaLoss) {
-                this->addLoss(deltaLoss);
-
                 MatrixX& o = this->getOutput();
                 const MatrixX& l = deltaLoss;
 

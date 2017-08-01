@@ -56,8 +56,6 @@ namespace redtea {
                 }
 
                 void backward(const MatrixX& deltaLoss) {
-                    this->addLoss(deltaLoss);
-
                     MatrixX predict = inputs[0]->getOutput();
                     MatrixX target = inputs[1]->getOutput();
                     assert(predict.cols() == target.cols()
@@ -130,8 +128,6 @@ namespace redtea {
                     }
                 }
                 void backward(const MatrixX& deltaLoss) {
-                    this->addLoss(deltaLoss);
-
                     MatrixX predict = inputs[0]->getOutput();
                     MatrixX target = inputs[1]->getOutput();
                     assert(predict.cols() == target.cols()
