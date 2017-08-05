@@ -98,7 +98,10 @@ namespace redtea {
 					Add C = MulElt(f, c0) + MulElt(i, c);
 					MulElt output = MulElt(o, C);
 					
-					this->setParam(output.getParam());
+					//directly output to the layer
+					this->setRows(output.rows());
+					this->setCols(output.cols());
+					output.setParam(this->getParam());
                     inputs.push_back(output.copy());
 					
 					lstmCellParam->C = C.copy();
@@ -198,7 +201,9 @@ namespace redtea {
 						}
 					}
 					
-					this->setParam(cell->getParam());
+					this->setRows(cell->rows());
+					this->setCols(cell->cols());
+					cell->setParam(this->param);
                     inputs.push_back(cell);
                 }
 				

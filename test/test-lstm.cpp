@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
 
     RefVector<Tensor> lstm_in = SubTensor::split(x);
 	
-    LstmLayer lstmLayer(lstm_in, 100);
+    LstmLayer lstmLayer(lstm_in, 10);
 	
 	ConcatTensor concat(lstmLayer.getOutputTensor());
 	
@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
 
     for(int i=0;i<epoch;i++) {
         opti.run();
-        if(i % 100 == 0) {
+        if(i % 1 == 0) {
             cout<<"loss: "<<loss.getOutput().mean()<<endl;
         }
     }
