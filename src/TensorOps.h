@@ -249,7 +249,7 @@ namespace redtea {
                 setCols(a->cols());                
             }
             MulElt(const Tensor& a, const Tensor& b) : Tensor(){
-                assert(a.cols() == b.rows()
+                assert(a.cols() == b.cols()
 					&& a.rows() == b.rows());
                 inputs.push_back(a.copy());
                 inputs.push_back(b.copy());

@@ -1,7 +1,11 @@
 #ifndef __SHAPE_OPS_H
 #define __SHAPE_OPS_H
 
-class SubTensor : public Tensor {
+
+namespace redtea {
+    namespace core {
+
+		class SubTensor : public Tensor {
 			
 			struct SubTensorParam : public Param {
 				int  index;
@@ -20,8 +24,8 @@ class SubTensor : public Tensor {
 					shared_ptr<SubTensorParam> subTensorParam(new SubTensorParam());
 					param = subTensorParam;
 					
-					param->index = index;
-					param->row = row;
+					subTensorParam->index = index;
+					subTensorParam->row = row;
 					
 					if(row) {
 						setRows(1);
@@ -30,7 +34,7 @@ class SubTensor : public Tensor {
 						setRows(in.rows());
 						setCols(1);
 					}
-					inputs->push_back(in.copy());
+					inputs.push_back(in.copy());
 				}
             public :
                 typedef SubTensor Type;
@@ -59,7 +63,7 @@ class SubTensor : public Tensor {
 				}
 				
 				void backward(const MatrixX& deltaLoss) {
-					MatrixX deltaLoss0 = MatrixX::zero(rows(), cols());
+					MatrixX deltaLoss0 = MatrixX::Zero(rows(), cols());
 					SubTensorParam* subTensorParam = (SubTensorParam*)param.get();
 					if(subTensorParam->row) {
 						deltaLoss0.row(subTensorParam->index) = deltaLoss.row(0);
@@ -69,9 +73,8 @@ class SubTensor : public Tensor {
 					Tensor::backward(deltaLoss0);
 				}
 
-			static :
-				RefVector<SubTensor> split(const Tensor& tensor, bool row = true) {
-					RefVector<SubTensor> subTensors;
+			static RefVector<Tensor> split(const Tensor& tensor, bool row = true) {
+					RefVector<Tensor> subTensors;
 					int count = 0;
 					if(row) {
 						count = tensor.rows();
@@ -79,15 +82,89 @@ class SubTensor : public Tensor {
 						count = tensor.cols();
 					}
 					
-					for(int i=0;i<cont;i++) {
+					for(int i=0;i<count;i++) {
 							subTensors.push_back(
-								shared_ptr<SubTensor>(
+								shared_ptr<Tensor>(
 									new SubTensor(tensor, i, row)));
 					}
 					
 					return subTensors;
 				}
         };
+		
+		
+		class ConcatTensor : public Tensor {
+			
+			struct ConcatTensorParam : public Param {
+				bool row;
+			};
+			
+            public :
+                ConcatTensor() : Tensor() { }
+                ConcatTensor(RefVector<Tensor>& subTensors, bool row=true) {
+					_init(subTensors, row);
+                }
+				void _init(RefVector<Tensor>& subTensors, bool row=true) {					
+					assert(subTensors.size() > 0);
+					
+					shared_ptr<ConcatTensorParam> concatTensorParam(new ConcatTensorParam());
+					param = concatTensorParam;
+					
+					concatTensorParam->row = row;
+					
+					if(row) {
+						setRows(subTensors.size());
+						setCols(subTensors[0]->cols());
+					}else {
+						setRows(subTensors[0]->rows());
+						setCols(subTensors.size());
+					}
+					
+					inputs = subTensors;
+				}
+            public :
+                typedef ConcatTensor Type;
+                shared_ptr<Tensor> copy() const{
+                    shared_ptr<Tensor> c(new Type());
+                    c->setParam(this->getParam());
+                    c->setInputs(this->getInputs());
+                    c->setOptimizer(this->getOptimizer());
+                    return c;
+                }
+				Type& operator=(const Type& other) {
+                    this->set(other);
+                    return *this;
+                }
+            public :
+				void forward() {
+					Tensor::forward();
+					
+					ConcatTensorParam* concatTensorParam = (ConcatTensorParam*)param.get();
+					
+					MatrixX& o = this->getOutput();
+					this->getOutput().resize(rows(), cols());
+					for(int i=0;i<inputs.size();i++) {
+						if(concatTensorParam->row) {
+							o.row(i) = inputs[i]->getOutput();
+						}else {
+							o.col(i) = inputs[i]->getOutput();
+						}
+					}
+				}
+				
+				void backward(const MatrixX& deltaLoss) {
+					ConcatTensorParam* concatTensorParam = (ConcatTensorParam*)param.get();
+					
+					for(int i=0;i<inputs.size();i++) {
+						if(concatTensorParam->row) {
+							inputs[i]->backward(deltaLoss.row(i));
+						}else {
+							inputs[i]->backward(deltaLoss.col(i));
+						}
+					}
+				}
+        };
 
-
+	};
+};
 #endif

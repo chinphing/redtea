@@ -98,7 +98,7 @@ namespace redtea {
 					Add C = MulElt(f, c0) + MulElt(i, c);
 					MulElt output = MulElt(o, C);
 					
-                    output.setParam(this->getParam());
+					this->setParam(output.getParam());
                     inputs.push_back(output.copy());
 					
 					lstmCellParam->C = C.copy();
@@ -142,7 +142,7 @@ namespace redtea {
 				shared_ptr<Tensor> w_xc, w_hc, b_c;
 				shared_ptr<Tensor> w_xo, w_ho, b_o;
 				shared_ptr<Tensor> h0, c0;
-				RefVector<LstmCell> outputs;
+				RefVector<Tensor> outputs;
 			};
 				
 			public :
@@ -187,8 +187,9 @@ namespace redtea {
 											 lstmParam->w_xo, lstmParam->w_ho, lstmParam->b_o) );
 							lstmParam->outputs.push_back(cell);
 						}else {
+							LstmCell* lastCell = (LstmCell*)cell.get();
 							cell = shared_ptr<LstmCell>(
-								new LstmCell(ins[i], cell->getC(), cell->getH(), outputSize, 
+								new LstmCell(ins[i], lastCell->getC(), lastCell->getH(), outputSize, 
 											 lstmParam->w_xf, lstmParam->w_hf, lstmParam->b_f, 
 											 lstmParam->w_xi, lstmParam->w_hi, lstmParam->b_i,
 											 lstmParam->w_xc, lstmParam->w_hc, lstmParam->b_c,
@@ -197,9 +198,7 @@ namespace redtea {
 						}
 					}
 					
-					setRows(inputRow);
-					setCols(outputSize);
-					
+					this->setParam(cell->getParam());
                     inputs.push_back(cell);
                 }
 				
@@ -208,8 +207,13 @@ namespace redtea {
 					Tensor::forward();
 					
 					LstmParam* lstmParam = (LstmParam*)param.get();
-					const shared_ptr<LstmCell> lstmCell = *lstmParam->outputs.end();
+					LstmCell* lstmCell = (LstmCell*)(*lstmParam->outputs.end()).get();
 					this->getOutput() = lstmCell->getOutput();
+				}
+				
+				RefVector<Tensor>& getOutputTensor() {
+					LstmParam* lstmParam = (LstmParam*)param.get();
+					return lstmParam->outputs;
 				}
 				
 			public :

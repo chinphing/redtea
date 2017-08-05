@@ -10,7 +10,8 @@
 #include "Loss.h"
 #include "Optimizer.h"
 #include "Activation.h"
-
+#include "Layer.h"
+#include "ShapeOps.h"
 #include "data.h"
 
 using namespace std;
@@ -25,20 +26,20 @@ int main(int argc, char* argv[]) {
 
     MatrixX sample;
     MatrixX target;
-    loadCsv("./test/lstm-data.csv", sample, target);
+    loadCsv("./test/lstm.csv", sample, target);
 
-    cout<<"direct mode"<<endl;
     Constant x(sample);
     Constant y(target);
 
-    Variable w(MatrixX::Random(sample.cols(), 1));
-    Variable b(MatrixX::Random(1, 1));
-
-    Mul mul(x, w);
-    Add add(mul, b);
-    Sigmoid act(add);
+    RefVector<Tensor> lstm_in = SubTensor::split(x);
+	
+    LstmLayer lstmLayer(lstm_in, 100);
+	
+	ConcatTensor concat(lstmLayer.getOutputTensor());
+	
+    DenseLayer dense(concat, 1);  
    
-    LogisticLoss loss(act, y);
+    LeastSquareLoss loss(dense, y);
 
     //AdamOptimizer opti;
     SGDOptimizer opti(1e-3);
@@ -53,9 +54,7 @@ int main(int argc, char* argv[]) {
             cout<<"loss: "<<loss.getOutput().mean()<<endl;
         }
     }
-    cout<<"o: "<<act.getOutput()<<endl; 
-    cout<<"w: "<<w.getOutput()<<endl;
-    cout<<"b: "<<b.getOutput()<<endl;
+    cout<<"output: "<<dense.getOutput()<<endl; 
     
     return 0;
 }
