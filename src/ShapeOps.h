@@ -142,7 +142,7 @@ namespace redtea {
 					ConcatTensorParam* concatTensorParam = (ConcatTensorParam*)param.get();
 					
 					MatrixX& o = this->getOutput();
-					this->getOutput().resize(rows(), cols());
+					this->getOutput() = MatrixX::Zero(rows(), cols());
 					for(int i=0;i<inputs.size();i++) {
 						if(concatTensorParam->row) {
 							o.row(i) = inputs[i]->getOutput();
