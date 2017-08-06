@@ -56,7 +56,9 @@ namespace redtea {
                 }
             }
 
-            void backward(const MatrixX& deltaLoss) {
+            void backward() {
+				const MatrixX& deltaLoss = getLoss();
+				
                 MatrixX& o = this->getOutput();
                 const MatrixX& l = deltaLoss;
 
@@ -70,7 +72,8 @@ namespace redtea {
                         }
                     }
                 }
-                inputs[0]->backward(deltaLossIn);
+                inputs[0]->addLoss(deltaLossIn);
+				clearLoss();
             }
         public :
             static shared_ptr<Type> create(PTensor in) {
@@ -124,7 +127,9 @@ namespace redtea {
                 }
             }
 
-            void backward(const MatrixX& deltaLoss) {
+            void backward() {
+				const MatrixX& deltaLoss = getLoss();
+				
                 MatrixX& o = this->getOutput();
                 const MatrixX& l = deltaLoss;
 
@@ -135,7 +140,8 @@ namespace redtea {
                         deltaLossIn(i, j) *= l(i, j);
                     }
                 }
-                inputs[0]->backward(deltaLossIn);    
+                inputs[0]->addLoss(deltaLossIn);
+				clearLoss();
             }
 
         public :
@@ -209,8 +215,9 @@ namespace redtea {
                 }
             }
 
-            void backward(const MatrixX& deltaLoss) {
-
+            void backward() {
+				const MatrixX& deltaLoss = getLoss();
+				
                 MatrixX& o = this->getOutput();
                 const MatrixX& l = deltaLoss;
                 MatrixX deltaLossIn = MatrixX::Zero(o.rows(), o.cols());
@@ -227,7 +234,8 @@ namespace redtea {
                     }
                 }
 
-                inputs[0]->backward(deltaLossIn);
+                inputs[0]->addLoss(deltaLossIn);
+				clearLoss();
             }
         public :
             static shared_ptr<Softmax> create(PTensor in) {
@@ -281,18 +289,21 @@ namespace redtea {
                 }
             }
 
-            void backward(const MatrixX& deltaLoss) {
+            void backward() {
+				const MatrixX& deltaLoss = getLoss();
+				
                 MatrixX& o = this->getOutput();
                 const MatrixX& l = deltaLoss;
 
                 MatrixX deltaLossIn = MatrixX::Zero(o.rows(), o.cols()); 
                 for(int i=0;i<o.rows();i++) {
                     for(int j=0;j<o.cols();j++) {                       
-			deltaLossIn(i, j) = 1.0 - o(i, j) * o(i, j);
+						deltaLossIn(i, j) = 1.0 - o(i, j) * o(i, j);
                         deltaLossIn(i, j) *= l(i, j);
                     }
                 }
-                inputs[0]->backward(deltaLossIn);    
+                inputs[0]->addLoss(deltaLossIn);
+				clearLoss();
             }
 
         public :

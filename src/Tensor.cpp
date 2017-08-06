@@ -98,16 +98,18 @@ namespace redtea{
                 *
                 */
                 void Tensor::reset() {
+					if(!param->forwarded) return;
+					
+					for(int i=0;i<inputs.size();i++) {
+						inputs[i]->reset();
+					}
+					
+					//must be set after reset of children, because layer tensor share 'param'.
+					//if before, the children tensor will directly return, param will never be updated
                     param->forwarded = false;
                     param->updated = false;
 
-                    MatrixX& loss = param->tensorLoss;
-                    if(loss.rows() > 0) loss = MatrixX::Zero(
-                                            loss.rows(), loss.cols());
- 
-                    for(int i=0;i<inputs.size();i++) {
-                        inputs[i]->reset();
-                    }
+					clearLoss();
                 }
                 void Tensor::forward() {
                     if(param->forwarded) return;
@@ -118,9 +120,9 @@ namespace redtea{
                     param->forwarded = true;
                 }
 
-                void Tensor::backward(const MatrixX& deltaLoss) {
+                void Tensor::backward() {
                     for(int i=0;i<inputs.size();i++) {
-                        inputs[i]->backward(deltaLoss);
+                        inputs[i]->backward();
                     }
                 }
 
@@ -146,6 +148,14 @@ namespace redtea{
                                           deltaLoss.rows(), deltaLoss.cols()); 
                     loss += deltaLoss;
                 }
+				
+                void Tensor::clearLoss() {
+                    MatrixX& loss = param->tensorLoss;
+                    if(loss.rows() > 0) loss = MatrixX::Zero(
+                                          loss.rows(), loss.cols()); 
+                }
+				
+				
 
                 MatrixX& Tensor::getLoss() {
                     return param->tensorLoss;

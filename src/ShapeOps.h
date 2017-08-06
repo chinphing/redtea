@@ -62,7 +62,8 @@ namespace redtea {
 					}
 				}
 				
-				void backward(const MatrixX& deltaLoss) {
+				void backward() {
+					const MatrixX& deltaLoss = getLoss();
 					MatrixX deltaLoss0 = MatrixX::Zero(inputs[0]->rows(), inputs[0]->cols());
 					SubTensorParam* subTensorParam = (SubTensorParam*)param.get();
 					if(subTensorParam->row) {
@@ -70,7 +71,8 @@ namespace redtea {
 					}else {
 						deltaLoss0.col(subTensorParam->index) = deltaLoss;
 					}
-					Tensor::backward(deltaLoss0);
+					inputs[0]->addLoss(deltaLoss0);
+					clearLoss();
 				}
 
 			static RefVector<Tensor> split(const Tensor& tensor, bool row = true) {
@@ -152,16 +154,19 @@ namespace redtea {
 					}
 				}
 				
-				void backward(const MatrixX& deltaLoss) {
+				void backward() {
+					const MatrixX& deltaLoss = getLoss();
 					ConcatTensorParam* concatTensorParam = (ConcatTensorParam*)param.get();
 					
 					for(int i=0;i<inputs.size();i++) {
 						if(concatTensorParam->row) {
-							inputs[i]->backward(deltaLoss.row(i));
+							inputs[i]->addLoss(deltaLoss.row(i));
 						}else {
-							inputs[i]->backward(deltaLoss.col(i));
+							inputs[i]->addLoss(deltaLoss.col(i));
 						}
 					}
+					
+					clearLoss();
 				}
         };
 

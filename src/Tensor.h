@@ -76,19 +76,21 @@ namespace redtea{
             public :
                 /*
                 * It will be time efficient if you call this method 
-                * when there are more than one collections for                 *                * a Tensor Object in the Tensor graph. 
+                * when there are more than one collections for                 
+				* a Tensor Object in the Tensor graph. 
                 * 
                 */
                 virtual void reset();
                 virtual void forward(); 
-                virtual void backward(const MatrixX& deltaLoss);
+                virtual void backward();
                 virtual void update();
 
             public :
                 void setOutput(const MatrixX& output);
                 MatrixX& getOutput();
                 void addLoss(const MatrixX& deltaLoss); 
-                MatrixX& getLoss(); 
+                MatrixX& getLoss();
+				void clearLoss();
             public :
                 int rows() const;
                 void setRows(int r);

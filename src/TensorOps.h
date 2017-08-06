@@ -40,12 +40,14 @@ namespace redtea {
                     return *this;
                 }
             public :
-                void backward(const MatrixX& deltaLoss) {
-                    this->addLoss(deltaLoss);
-                }
                 void update() {
+					if(param->updated) return;
+					
                     optimizer->update(this->getOutput(), this->getLoss());
-                } 
+					this->clearLoss();
+					
+					param->updated = true;
+                }
             public :
                 static shared_ptr<Variable> create(const MatrixX& mat) {
                     return shared_ptr<Variable>(new Variable(mat));
@@ -122,23 +124,23 @@ namespace redtea {
                 setCols(a.cols());
             }
         public :
-                Add(const Add& other) {
-                    set(other);
-                }
+            Add(const Add& other) {
+                set(other);
+            }
 
-                typedef Add Type;
-                shared_ptr<Tensor> copy() const{
-                    shared_ptr<Tensor> c(new Type());
-                    c->setParam(this->getParam());
-                    c->setInputs(this->getInputs());
-                    c->setOptimizer(this->getOptimizer());
-                    return c;
-                }
+            typedef Add Type;
+            shared_ptr<Tensor> copy() const{
+                shared_ptr<Tensor> c(new Type());
+                c->setParam(this->getParam());
+                c->setInputs(this->getInputs());
+                c->setOptimizer(this->getOptimizer());
+                return c;
+            }
 
-                Type& operator=(const Type& other) {
-                    this->set(other);
-                    return *this;
-                }
+            Type& operator=(const Type& other) {
+                this->set(other);
+                return *this;
+            }
         public :
             void forward() {
                 Tensor::forward();
@@ -153,7 +155,9 @@ namespace redtea {
                 }
             }
 
-            void backward(const MatrixX& deltaLoss) {
+            void backward() {
+				const MatrixX& deltaLoss = getLoss();
+				
                 MatrixX& a = inputs[0]->getOutput();
                 MatrixX& b = inputs[1]->getOutput();
 
@@ -168,8 +172,10 @@ namespace redtea {
                     deltaLoss1 = deltaLoss;
                 }
 
-                inputs[0]->backward(deltaLoss0);
-                inputs[1]->backward(deltaLoss1);
+                inputs[0]->addLoss(deltaLoss0);
+                inputs[1]->addLoss(deltaLoss1);
+				
+				clearLoss();
             }
 
         public :
@@ -220,14 +226,18 @@ namespace redtea {
                                         * inputs[1]->getOutput();
             }
 
-            void backward(const MatrixX& deltaLoss) {
+            void backward() {
+				const MatrixX& deltaLoss = getLoss();
+				
                 MatrixX deltaLoss0 = 
                            deltaLoss * inputs[1]->getOutput().transpose();
                 MatrixX deltaLoss1 =
                            inputs[0]->getOutput().transpose() * deltaLoss;
                 
-                inputs[0]->backward(deltaLoss0);
-                inputs[1]->backward(deltaLoss1);    
+                inputs[0]->addLoss(deltaLoss0);
+                inputs[1]->addLoss(deltaLoss1);
+				
+				clearLoss();
             }
 
         public :
@@ -281,14 +291,18 @@ namespace redtea {
                                         * inputs[1]->getOutput().array();
             }
 
-            void backward(const MatrixX& deltaLoss) {
+            void backward() {
+				const MatrixX& deltaLoss = getLoss();
+				
                 MatrixX deltaLoss0 = 
                            deltaLoss.array() * inputs[1]->getOutput().array();
                 MatrixX deltaLoss1 =
                            inputs[0]->getOutput().array() * deltaLoss.array();
                 
-                inputs[0]->backward(deltaLoss0);
-                inputs[1]->backward(deltaLoss1);
+                inputs[0]->addLoss(deltaLoss0);
+                inputs[1]->addLoss(deltaLoss1);
+				
+				clearLoss();
             }
 
         public :

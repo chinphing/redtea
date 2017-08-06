@@ -55,7 +55,9 @@ namespace redtea {
                     this->getOutput() = (predict - target).array().square();
                 }
 
-                void backward(const MatrixX& deltaLoss) {
+                void backward() {
+					const MatrixX& deltaLoss = getLoss();
+					
                     MatrixX predict = inputs[0]->getOutput();
                     MatrixX target = inputs[1]->getOutput();
                     assert(predict.cols() == target.cols()
@@ -64,7 +66,7 @@ namespace redtea {
                     MatrixX deltaLossIn = (predict - target).array()
                                                * deltaLoss.array();
 
-                    inputs[0]->backward(deltaLossIn);
+                    inputs[0]->addLoss(deltaLossIn);
                 }
         };
 
@@ -127,7 +129,9 @@ namespace redtea {
                         }
                     }
                 }
-                void backward(const MatrixX& deltaLoss) {
+                void backward() {
+					const MatrixX& deltaLoss = getLoss();
+					
                     MatrixX predict = inputs[0]->getOutput();
                     MatrixX target = inputs[1]->getOutput();
                     assert(predict.cols() == target.cols()
@@ -147,7 +151,7 @@ namespace redtea {
                         }
                     }
 
-                    inputs[0]->backward(deltaLossIn);
+                    inputs[0]->addLoss(deltaLossIn);
                 }
         };
     };

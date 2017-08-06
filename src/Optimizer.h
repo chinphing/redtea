@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <list>
+#include <set>
 #include "def.h"
 #include "Tensor.h"
 
@@ -23,17 +24,54 @@ namespace redtea{
                     l.setOptimizer(*this);
                     loss = l.copy();
                 }
+				
+				void backward() {
+					set<long> tensorSets; 
+					RefVector<Tensor> tensors;
+					RefVector<Tensor> tempTensors;
+					
+					tensors.push_back(loss);
+					
+					while(tensors.size() > 0) {
+						tensorSets.clear();
+						tempTensors.clear();
+						for(int i=0;i<tensors.size();i++) {
+							tensors[i]->backward();
+							
+							RefVector<Tensor>& inputs = tensors[i]->getInputs();
+							for(int j=0;j<inputs.size();j++) {
+								long tensorPointer = (long) inputs[j]->getParam().get();
+								set<long>::iterator iter;
+								if((iter = tensorSets.find(tensorPointer)) == tensorSets.end()) {
+									tensorSets.insert(tensorPointer);
+									tempTensors.push_back(inputs[j]);
+								}
+							}
+						}
+						tensors = tempTensors;
+					}
+				}
+				
                 void run() {
                     if(!loss) {
                         cerr<<"Error: no loss to minimize!"<<endl;
+						return;
                     }
-
-                    loss->reset();
+					
+					//ready for tensor network 
+					loss->reset();
+					
+					//forward procedure
                     loss->forward();
-                    MatrixX& o = loss->getOutput();
+                    
+					//initialize the loss of last layer
+					MatrixX& o = loss->getOutput();
                     const MatrixX& ones = MatrixX::Ones(o.rows(), o.cols());
-
-                    loss->backward(ones);
+					loss->addLoss(ones);
+					
+					
+					backward();
+					
                     loss->update();
                 }
 
