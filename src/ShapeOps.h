@@ -63,12 +63,12 @@ namespace redtea {
 				}
 				
 				void backward(const MatrixX& deltaLoss) {
-					MatrixX deltaLoss0 = MatrixX::Zero(rows(), cols());
+					MatrixX deltaLoss0 = MatrixX::Zero(inputs[0]->rows(), inputs[0]->cols());
 					SubTensorParam* subTensorParam = (SubTensorParam*)param.get();
 					if(subTensorParam->row) {
-						deltaLoss0.row(subTensorParam->index) = deltaLoss.row(0);
+						deltaLoss0.row(subTensorParam->index) = deltaLoss;
 					}else {
-						deltaLoss0.col(subTensorParam->index) = deltaLoss.col(0);
+						deltaLoss0.col(subTensorParam->index) = deltaLoss;
 					}
 					Tensor::backward(deltaLoss0);
 				}
@@ -142,7 +142,7 @@ namespace redtea {
 					ConcatTensorParam* concatTensorParam = (ConcatTensorParam*)param.get();
 					
 					MatrixX& o = this->getOutput();
-					this->getOutput() = MatrixX::Zero(rows(), cols());
+					o.resize(rows(), cols());
 					for(int i=0;i<inputs.size();i++) {
 						if(concatTensorParam->row) {
 							o.row(i) = inputs[i]->getOutput();

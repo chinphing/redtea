@@ -197,24 +197,22 @@ namespace redtea {
 											 lstmParam->w_xi, lstmParam->w_hi, lstmParam->b_i,
 											 lstmParam->w_xc, lstmParam->w_hc, lstmParam->b_c,
 											 lstmParam->w_xo, lstmParam->w_ho, lstmParam->b_o) );
+							/*
+							//set the last cell as the layer output
+							if(i == ins.size()-1) {
+								this->setRows(cell->rows());
+								this->setCols(cell->cols());
+								cell->setParam(this->param);
+							}				 
+							*/
 							lstmParam->outputs.push_back(cell);
 						}
 					}
 					
-					this->setRows(cell->rows());
-					this->setCols(cell->cols());
-					cell->setParam(this->param);
                     inputs.push_back(cell);
                 }
 				
 			public :
-				void forward() {
-					Tensor::forward();
-					
-					LstmParam* lstmParam = (LstmParam*)param.get();
-					LstmCell* lstmCell = (LstmCell*)(*lstmParam->outputs.end()).get();
-					this->getOutput() = lstmCell->getOutput();
-				}
 				
 				RefVector<Tensor>& getOutputTensor() {
 					LstmParam* lstmParam = (LstmParam*)param.get();

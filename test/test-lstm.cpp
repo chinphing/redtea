@@ -41,8 +41,8 @@ int main(int argc, char* argv[]) {
    
     LeastSquareLoss loss(dense, y);
 
-    //AdamOptimizer opti;
-    SGDOptimizer opti(1e-3);
+    AdamOptimizer opti;
+    //SGDOptimizer opti(1e-3);
     //AdadeltaOptimizer opti;
     //MomentumOptimizer opti(0.8, 1e-3);
 
@@ -50,8 +50,8 @@ int main(int argc, char* argv[]) {
 
     for(int i=0;i<epoch;i++) {
         opti.run();
-        if(i % 1 == 0) {
-            cout<<"loss: "<<loss.getOutput().mean()<<endl;
+        if(i % 10 == 0) {
+            cout<<"epoch: "<<i<<", loss: "<<loss.getOutput().mean()<<endl;
         }
     }
     cout<<"output: "<<dense.getOutput()<<endl; 
